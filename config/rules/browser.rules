@@ -1,0 +1,13 @@
+# =============================================================================
+# browser.rules — Reglas de optimización de navegadores
+# =============================================================================
+# Linux System Optimizer (LSO)
+# Autor: Ricardo Rosero <rrosero2000@gmail.com>
+# GitHub: https://github.com/rr-n4p5t3r
+# Licencia: MIT
+# =============================================================================
+
+browser == firefox -> optimize_firefox
+browser == chromium -> optimize_chromium
+browser == brave -> optimize_chromium
+browser_cache > 1GB -> clean_browser_cache

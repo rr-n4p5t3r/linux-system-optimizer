@@ -1,0 +1,17 @@
+# =============================================================================
+# desktop.rules — Reglas de optimización de escritorio
+# =============================================================================
+# Linux System Optimizer (LSO)
+# Autor: Ricardo Rosero <rrosero2000@gmail.com>
+# GitHub: https://github.com/rr-n4p5t3r
+# Licencia: MIT
+# =============================================================================
+
+desktop == gnome -> optimize_gnome
+desktop == kde -> optimize_kde
+desktop == cinnamon -> optimize_cinnamon
+desktop == xfce -> optimize_xfce
+desktop == mate -> optimize_mate
+desktop == lxqt -> optimize_lxqt
+desktop == budgie -> optimize_budgie
+desktop == cosmic -> optimize_cosmic

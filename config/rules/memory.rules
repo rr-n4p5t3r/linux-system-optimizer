@@ -1,0 +1,14 @@
+# =============================================================================
+# memory.rules — Reglas de optimización de memoria
+# =============================================================================
+# Linux System Optimizer (LSO)
+# Autor: Ricardo Rosero <rrosero2000@gmail.com>
+# GitHub: https://github.com/rr-n4p5t3r
+# Licencia: MIT
+# =============================================================================
+
+ram_usage > 85 -> analyze_processes
+ram_usage > 90 -> clean_caches
+ram_usage > 95 -> optimize_swap
+swap_usage > 80 -> increase_swappiness
+zram_available == true && ram_total < 4GB -> setup_zram

@@ -1,0 +1,13 @@
+# =============================================================================
+# cpu.rules — Reglas de optimización de CPU
+# =============================================================================
+# Linux System Optimizer (LSO)
+# Autor: Ricardo Rosero <rrosero2000@gmail.com>
+# GitHub: https://github.com/rr-n4p5t3r
+# Licencia: MIT
+# =============================================================================
+
+cpu_usage > 90 -> optimize_processes
+cpu_governor != performance && profile == gaming -> set_governor_performance
+cpu_cores > 4 -> enable_parallel_jobs
+load_average > cores * 2 -> alert_high_load
