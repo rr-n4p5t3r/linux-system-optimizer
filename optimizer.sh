@@ -38,6 +38,7 @@ export LSO_DRY_RUN=false
 export LSO_FORCE=false
 export LSO_AUTO_BACKUP=false
 export LSO_PROFILE=""
+export LSO_FULL=false
 
 # =============================================================================
 # CARGAR LIBRERÍAS CORE
@@ -55,7 +56,7 @@ for lib in colors logger utils; do
     }
 done
 
-for core in detector plugin_loader engine dispatcher; do
+for core in detector plugin_loader engine rule_engine dispatcher; do
     core_path="${LSO_BASE_DIR}/core/${core}.sh"
     if [[ ! -f "$core_path" ]]; then
         echo "ERROR: No se encontró ${core}.sh en ${LSO_BASE_DIR}/core/" >&2

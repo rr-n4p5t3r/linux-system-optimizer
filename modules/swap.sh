@@ -5,9 +5,9 @@ optimize_swap() {
 
     # --- Verificar swap existente ---
     local swap_total
-    swap_total=$(free -m | awk '/^Swap:/{print $2}')
+    swap_total=$(LC_ALL=C free -m | awk '/^Swap:/{print $2}')
     local swap_used
-    swap_used=$(free -m | awk '/^Swap:/{print $3}')
+    swap_used=$(LC_ALL=C free -m | awk '/^Swap:/{print $3}')
 
     echo -e "  ${C_DIM}Swap total:${C_RESET} ${C_CYAN}${swap_total}MB${C_RESET}"
     echo -e "  ${C_DIM}Swap usado:${C_RESET} ${C_CYAN}${swap_used}MB${C_RESET}"

@@ -1,0 +1,70 @@
+[2026-07-24 10:28:43] [INFO] === Linux System Optimizer iniciado ===
+[2026-07-24 10:28:43] [INFO] Autor: Ricardo Rosero <rrosero2000@gmail.com>
+[2026-07-24 10:28:43] [INFO] GitHub: https://github.com/rr-n4p5t3r
+[2026-07-24 10:28:43] [INFO] PID: 76990 | Usuario: n4p5t3r | Fecha: vie 24 jul 2026 10:28:43 -05
+[2026-07-24 10:28:43] [INFO] Directorio base: /home/n4p5t3r/linux-system-optimizer
+[2026-07-24 10:28:43] [DEBUG] Logs antiguos rotados (>30 días)
+[2026-07-24 10:28:43] [INFO] Detectando sistema...
+[2026-07-24 10:28:43] [INFO] Distribución detectada: Linux Mint (mint 22.3)
+[2026-07-24 10:28:43] [INFO] Escritorio detectado: kde
+[2026-07-24 10:28:43] [INFO] Gestor de paquetes: apt
+[2026-07-24 10:28:43] [INFO] CPU: AMD Ryzen 3 3250U with Radeon Graphics | Cores: 4 | Threads: 4
+[2026-07-24 10:28:43] [INFO] RAM Total: 13.56GiB | Disponible: 2.73GiB
+[2026-07-24 10:28:43] [INFO] GPU: Advanced Micro Devices, Inc. [AMD/ATI] Picasso/Raven 2 [Radeon Vega Series / Radeon Vega Mobile Series] (rev c4)
+[2026-07-24 10:28:43] [INFO] Tipo de disco raíz: NVMe
+[2026-07-24 10:28:43] [INFO] Navegadores detectados: firefox google-chrome brave-browser
+[2026-07-24 10:28:43] [INFO] IDEs detectados: code kate
+[2026-07-24 10:28:43] [INFO] Lenguajes detectados: python3 node nodejs php gcc g++ clang
+[2026-07-24 10:28:43] [INFO] Contenedores detectados: docker
+[2026-07-24 10:28:43] [INFO] Virtualización: none
+[2026-07-24 10:28:43] [INFO] Es laptop: true
+[2026-07-24 10:28:43] [INFO] Total plugins cargados: 0
+[2026-07-24 10:28:43] [INFO] Configuración cargada desde: /home/n4p5t3r/linux-system-optimizer/config/settings.conf
+[2026-07-24 10:28:43] [INFO] Perfil cargado: workstation
+[2026-07-24 10:28:43] [INFO] Iniciando módulo: analyzer
+[2026-07-24 10:28:43] [INFO] Reporte guardado en: /home/n4p5t3r/linux-system-optimizer/reports/analysis-20260724-102843.txt
+[2026-07-24 10:28:43] [SUCCESS] Módulo completado: analyzer
+[2026-07-24 10:28:43] [INFO] Iniciando módulo: memory_optimizer
+[2026-07-24 10:28:43] [SUCCESS] Módulo completado: memory_optimizer
+[2026-07-24 10:28:43] [INFO] Iniciando módulo: cpu_optimizer
+[2026-07-24 10:28:43] [WARN] Considera agregar 'noatime' a tus particiones en /etc/fstab
+[2026-07-24 10:28:43] [SUCCESS] Módulo completado: cpu_optimizer
+[2026-07-24 10:28:43] [INFO] Iniciando módulo: process_manager
+[2026-07-24 10:28:44] [SUCCESS] Módulo completado: process_manager
+[2026-07-24 10:28:44] [INFO] Iniciando módulo: service_manager
+[2026-07-24 10:28:44] [SUCCESS] Módulo completado: service_manager
+[2026-07-24 10:28:44] [INFO] Iniciando módulo: startup_manager
+[2026-07-24 10:28:44] [SUCCESS] Módulo completado: startup_manager
+[2026-07-24 10:28:45] [INFO] Iniciando módulo: desktop_optimizer
+[2026-07-24 10:28:45] [INFO] Cargando optimizaciones para: kde
+[2026-07-24 10:28:45] [SUCCESS] Módulo completado: desktop_optimizer
+[2026-07-24 10:28:45] [INFO] Iniciando módulo: browser_optimizer
+[2026-07-24 10:28:45] [SUCCESS] Módulo completado: browser_optimizer
+[2026-07-24 10:28:45] [INFO] Iniciando módulo: disk_optimizer
+[2026-07-24 10:28:45] [SUCCESS] Módulo completado: disk_optimizer
+[2026-07-24 10:28:45] [INFO] Iniciando módulo: network_optimizer
+[2026-07-24 10:28:45] [WARN] Kernel no soporta BBR
+[2026-07-24 10:28:45] [SUCCESS] Módulo completado: network_optimizer
+[2026-07-24 10:28:45] [INFO] Iniciando módulo: cache_cleaner
+[2026-07-24 10:28:46] [SUCCESS] Módulo completado: cache_cleaner
+[2026-07-24 10:28:46] [INFO] Iniciando módulo: package_optimizer
+[2026-07-24 10:28:46] [SUCCESS] Módulo completado: package_optimizer
+[2026-07-24 10:28:46] [INFO] Evaluando reglas: browser.rules
+[2026-07-24 10:28:46] [INFO] Regla activada: browser == firefox -> optimize_firefox
+[2026-07-24 10:28:46] [INFO] Iniciando módulo: browser_optimizer
+[2026-07-24 10:28:46] [SUCCESS] Módulo completado: browser_optimizer
+[2026-07-24 10:28:47] [INFO] Regla activada: browser_cache > 1GB -> clean_browser_cache
+[2026-07-24 10:28:47] [INFO] Iniciando módulo: cache_cleaner
+[2026-07-24 10:28:49] [SUCCESS] Módulo completado: cache_cleaner
+[2026-07-24 10:28:49] [INFO] Evaluando reglas: cpu.rules
+[2026-07-24 10:28:49] [INFO] Evaluando reglas: desktop.rules
+[2026-07-24 10:28:49] [INFO] Regla activada: desktop == kde -> optimize_kde
+[2026-07-24 10:28:49] [INFO] Evaluando reglas: distro.rules
+[2026-07-24 10:28:49] [INFO] Regla activada: distro == mint -> optimize_mint
+[2026-07-24 10:28:49] [INFO] Timeshift detectado — sistema de snapshots activo
+[2026-07-24 10:28:50] [INFO] Evaluando reglas: memory.rules
+[2026-07-24 10:28:50] [INFO] Iniciando módulo: report
+[2026-07-24 10:28:50] [SUCCESS] Reporte HTML generado: /home/n4p5t3r/linux-system-optimizer/reports/lso-report-20260724-102850.html
+[2026-07-24 10:28:50] [SUCCESS] Reporte TXT generado: /home/n4p5t3r/linux-system-optimizer/reports/lso-report-20260724-102850.txt
+[2026-07-24 10:28:50] [SUCCESS] Módulo completado: report
+[2026-07-24 10:28:50] [INFO] === Linux System Optimizer finalizado ===

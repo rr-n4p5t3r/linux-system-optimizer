@@ -1,0 +1,35 @@
+=== ANÁLISIS DEL SISTEMA ===
+Autor: Ricardo Rosero <rrosero2000@gmail.com>
+GitHub: https://github.com/rr-n4p5t3r
+Fecha: vie 24 jul 2026 09:25:48 -05
+
+[CPU]
+  Uso: %
+  Load: 1.67 2.17 1.31 2/1595 19465
+
+[MEMORIA]
+  Total: 13887MB
+  Usada: 8804MB (%)
+
+[DISCO]
+  /: 140G/234G (64%)
+
+[TOP PROCESOS RAM]
+  848 6.9% /usr/sbin/clamd
+  14860 4.8% /usr/share/code/code
+  8775 4.1% /opt/brave.com/brave/brave
+  8653 4.1% /usr/share/code/code
+  14819 2.5% /usr/share/code/code
+  16945 2.3% /usr/share/code/code
+  11093 2.2% /usr/share/code/code
+  3262 2.2% /usr/bin/plasmashell
+  16562 2.2% /home/n4p5t3r/.vscode/extensions/anthropic.claude-code-2.1.218-linux-x64/resources/native-binary/claude
+  8622 2.1% /usr/share/code/code
+
+[SERVICIOS] Activos: 63
+
+[CACHÉS]
+  Paquetes: 306.56MiB
+  Journal: 606.4M
+
+

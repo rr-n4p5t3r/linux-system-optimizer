@@ -10,7 +10,7 @@ GitHub: [@rr-n4p5t3r](https://github.com/rr-n4p5t3r)
 ## Características
 
 - **Detección automática** de distribución, escritorio, hardware y software
-- **Perfiles de optimización** preconfigurados (desktop, laptop, gaming, workstation, server)
+- **Perfiles de optimización** preconfigurados (desktop, laptop, gaming, workstation, server, dev)
 - **Módulos independientes** que pueden ejecutarse por separado
 - **Backups automáticos** antes de cualquier cambio permanente
 - **Sistema de plugins** extensible
@@ -44,6 +44,9 @@ sudo lso optimize
 # Optimizar con perfil gaming
 sudo lso optimize --profile gaming
 
+# Optimizar con perfil dev (bases de datos, entornos virtuales, lenguajes)
+sudo lso optimize --profile dev
+
 # Ejecutar módulo específico
 sudo lso module memory_optimizer
 
@@ -52,6 +55,12 @@ sudo lso detect
 
 # Simular optimización (sin aplicar cambios)
 sudo lso optimize --dry-run
+```
+
+Para la referencia completa de comandos, opciones, perfiles y el motor de reglas, consulta la página de manual (instalada por `install.sh`, o localmente con `man ./man/lso.1`):
+
+```bash
+man lso
 ```
 
 ## Arquitectura
@@ -63,7 +72,8 @@ linux-system-optimizer/
 │   ├── engine.sh         # Orquestador de módulos
 │   ├── detector.sh       # Detección automática
 │   ├── dispatcher.sh     # Enrutador de comandos
-│   └── plugin_loader.sh # Cargador de plugins
+│   ├── plugin_loader.sh  # Cargador de plugins
+│   └── rule_engine.sh    # Motor de reglas condicionales
 ├── lib/                  # Librerías base
 │   ├── colors.sh         # Colores y formato
 │   ├── logger.sh         # Sistema de logging
@@ -72,7 +82,8 @@ linux-system-optimizer/
 ├── modules/              # Módulos de optimización
 ├── distros/              # Scripts específicos por distro
 ├── desktops/             # Scripts específicos por escritorio
-├── config/               # Configuraciones y perfiles
+├── config/               # Configuraciones, perfiles y reglas
+├── man/                  # Página de manual (man lso)
 └── plugins/              # Plugins de terceros
 ```
 

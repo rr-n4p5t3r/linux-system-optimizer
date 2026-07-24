@@ -1,0 +1,50 @@
+[2026-07-24 09:44:05] [INFO] === Linux System Optimizer iniciado ===
+[2026-07-24 09:44:05] [INFO] Autor: Ricardo Rosero <rrosero2000@gmail.com>
+[2026-07-24 09:44:05] [INFO] GitHub: https://github.com/rr-n4p5t3r
+[2026-07-24 09:44:05] [INFO] PID: 30601 | Usuario: n4p5t3r | Fecha: vie 24 jul 2026 09:44:05 -05
+[2026-07-24 09:44:05] [INFO] Directorio base: /home/n4p5t3r/linux-system-optimizer
+[2026-07-24 09:44:05] [DEBUG] Logs antiguos rotados (>30 días)
+[2026-07-24 09:44:05] [INFO] Detectando sistema...
+[2026-07-24 09:44:05] [INFO] Distribución detectada: Linux Mint (mint 22.3)
+[2026-07-24 09:44:05] [INFO] Escritorio detectado: kde
+[2026-07-24 09:44:05] [INFO] Gestor de paquetes: apt
+[2026-07-24 09:44:05] [INFO] CPU: AMD Ryzen 3 3250U with Radeon Graphics | Cores: 4 | Threads: 4
+[2026-07-24 09:44:05] [INFO] RAM Total: 13.56GiB | Disponible: 4.83GiB
+[2026-07-24 09:44:05] [INFO] GPU: Advanced Micro Devices, Inc. [AMD/ATI] Picasso/Raven 2 [Radeon Vega Series / Radeon Vega Mobile Series] (rev c4)
+[2026-07-24 09:44:05] [INFO] Tipo de disco raíz: NVMe
+[2026-07-24 09:44:05] [INFO] Navegadores detectados: firefox google-chrome brave-browser
+[2026-07-24 09:44:05] [INFO] IDEs detectados: code kate
+[2026-07-24 09:44:05] [INFO] Lenguajes detectados: python3 node nodejs php gcc g++ clang
+[2026-07-24 09:44:05] [INFO] Contenedores detectados: docker
+[2026-07-24 09:44:05] [INFO] Virtualización: none
+none
+[2026-07-24 09:44:05] [INFO] Es laptop: true
+[2026-07-24 09:44:05] [INFO] Total plugins cargados: 0
+[2026-07-24 09:44:05] [INFO] Configuración cargada desde: /home/n4p5t3r/linux-system-optimizer/config/settings.conf
+[2026-07-24 09:44:05] [INFO] Perfil cargado: server
+[2026-07-24 09:44:05] [INFO] Iniciando módulo: analyzer
+[2026-07-24 09:44:05] [INFO] Reporte guardado en: /home/n4p5t3r/linux-system-optimizer/reports/analysis-20260724-094405.txt
+[2026-07-24 09:44:05] [SUCCESS] Módulo completado: analyzer
+[2026-07-24 09:44:05] [INFO] Iniciando módulo: memory_optimizer
+[2026-07-24 09:44:05] [SUCCESS] Módulo completado: memory_optimizer
+[2026-07-24 09:44:05] [INFO] Iniciando módulo: cpu_optimizer
+[2026-07-24 09:44:05] [WARN] Considera agregar 'noatime' a tus particiones en /etc/fstab
+[2026-07-24 09:44:05] [SUCCESS] Módulo completado: cpu_optimizer
+[2026-07-24 09:44:05] [INFO] Iniciando módulo: process_manager
+[2026-07-24 09:44:06] [SUCCESS] Módulo completado: process_manager
+[2026-07-24 09:44:06] [INFO] Iniciando módulo: service_manager
+[2026-07-24 09:44:06] [SUCCESS] Módulo completado: service_manager
+[2026-07-24 09:44:06] [INFO] Iniciando módulo: disk_optimizer
+[2026-07-24 09:44:07] [SUCCESS] Módulo completado: disk_optimizer
+[2026-07-24 09:44:07] [INFO] Iniciando módulo: network_optimizer
+[2026-07-24 09:44:07] [WARN] Kernel no soporta BBR
+[2026-07-24 09:44:07] [SUCCESS] Módulo completado: network_optimizer
+[2026-07-24 09:44:07] [INFO] Iniciando módulo: journal_optimizer
+[2026-07-24 09:44:07] [SUCCESS] Módulo completado: journal_optimizer
+[2026-07-24 09:44:07] [INFO] Iniciando módulo: cache_cleaner
+[2026-07-24 09:44:08] [SUCCESS] Módulo completado: cache_cleaner
+[2026-07-24 09:44:08] [INFO] Iniciando módulo: report
+[2026-07-24 09:44:08] [SUCCESS] Reporte HTML generado: /home/n4p5t3r/linux-system-optimizer/reports/lso-report-20260724-094408.html
+[2026-07-24 09:44:08] [SUCCESS] Reporte TXT generado: /home/n4p5t3r/linux-system-optimizer/reports/lso-report-20260724-094408.txt
+[2026-07-24 09:44:08] [SUCCESS] Módulo completado: report
+[2026-07-24 09:44:08] [INFO] === Linux System Optimizer finalizado ===

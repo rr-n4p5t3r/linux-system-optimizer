@@ -21,7 +21,7 @@ analyze_system() {
     local cpu_usage
     cpu_usage=$(awk '{print $1}' < /proc/loadavg)
     local cpu_percent
-    cpu_percent=$(awk "BEGIN {printf "%.1f", ($cpu_usage / $LSO_CPU_CORES) * 100}")
+    cpu_percent=$(awk "BEGIN {printf \"%.1f\", ($cpu_usage / $LSO_CPU_CORES) * 100}")
 
     echo -e "  ${C_DIM}Uso promedio (1m):${C_RESET} ${C_CYAN}${cpu_percent}%${C_RESET}"
     echo -e "  ${C_DIM}Load average:${C_RESET} ${C_CYAN}$(cat /proc/loadavg)${C_RESET}"
@@ -34,7 +34,7 @@ analyze_system() {
     local ram_used ram_total ram_percent
     ram_total=$(free -m | awk '/^Mem:/{print $2}')
     ram_used=$(free -m | awk '/^Mem:/{print $3}')
-    ram_percent=$(awk "BEGIN {printf "%.1f", ($ram_used / $ram_total) * 100}")
+    ram_percent=$(awk "BEGIN {printf \"%.1f\", ($ram_used / $ram_total) * 100}")
 
     local ram_color="$C_GREEN"
     [[ "$ram_percent" > "85" ]] && ram_color="$C_RED"
@@ -139,7 +139,7 @@ analyze_system() {
             temp_val=$(cat "$temp" 2>/dev/null)
             [[ -z "$temp_val" ]] && continue
             local temp_c
-            temp_c=$(awk "BEGIN {printf "%.1f", $temp_val / 1000}")
+            temp_c=$(awk "BEGIN {printf \"%.1f\", $temp_val / 1000}")
             local zone
             zone=$(basename "$(dirname "$temp")")
             local type

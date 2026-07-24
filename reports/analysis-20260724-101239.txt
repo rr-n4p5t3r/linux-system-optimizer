@@ -1,0 +1,35 @@
+=== ANÁLISIS DEL SISTEMA ===
+Autor: Ricardo Rosero <rrosero2000@gmail.com>
+GitHub: https://github.com/rr-n4p5t3r
+Fecha: vie 24 jul 2026 10:12:39 -05
+
+[CPU]
+  Uso: 48.0%
+  Load: 1.92 1.93 1.77 1/1929 53064
+
+[MEMORIA]
+  Total: 13887MB
+  Usada: 11026MB (79.4%)
+
+[DISCO]
+  /: 140G/234G (64%)
+
+[TOP PROCESOS RAM]
+  848 6.9% /usr/sbin/clamd
+  14860 5.1% /usr/share/code/code
+  8653 4.3% /usr/share/code/code
+  8775 4.1% /opt/brave.com/brave/brave
+  38604 4.1% /home/n4p5t3r/Descargas/Telegram/Telegram
+  44594 3.9% /usr/lib/firefox/firefox-bin
+  44295 3.6% /usr/lib/firefox/firefox
+  14819 2.9% /usr/share/code/code
+  9178 2.7% /opt/brave.com/brave/brave
+  3262 2.5% /usr/bin/plasmashell
+
+[SERVICIOS] Activos: 61
+
+[CACHÉS]
+  Paquetes: 306.56MiB
+  Journal: 606.4M
+
+

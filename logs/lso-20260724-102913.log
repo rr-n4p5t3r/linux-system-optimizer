@@ -1,0 +1,25 @@
+[2026-07-24 10:29:13] [INFO] === Linux System Optimizer iniciado ===
+[2026-07-24 10:29:13] [INFO] Autor: Ricardo Rosero <rrosero2000@gmail.com>
+[2026-07-24 10:29:13] [INFO] GitHub: https://github.com/rr-n4p5t3r
+[2026-07-24 10:29:13] [INFO] PID: 80472 | Usuario: n4p5t3r | Fecha: vie 24 jul 2026 10:29:13 -05
+[2026-07-24 10:29:13] [INFO] Directorio base: /home/n4p5t3r/linux-system-optimizer
+[2026-07-24 10:29:13] [DEBUG] Logs antiguos rotados (>30 días)
+[2026-07-24 10:29:13] [INFO] Detectando sistema...
+[2026-07-24 10:29:13] [INFO] Distribución detectada: Linux Mint (mint 22.3)
+[2026-07-24 10:29:13] [INFO] Escritorio detectado: kde
+[2026-07-24 10:29:13] [INFO] Gestor de paquetes: apt
+[2026-07-24 10:29:13] [INFO] CPU: AMD Ryzen 3 3250U with Radeon Graphics | Cores: 4 | Threads: 4
+[2026-07-24 10:29:13] [INFO] RAM Total: 13.56GiB | Disponible: 2.73GiB
+[2026-07-24 10:29:13] [INFO] GPU: Advanced Micro Devices, Inc. [AMD/ATI] Picasso/Raven 2 [Radeon Vega Series / Radeon Vega Mobile Series] (rev c4)
+[2026-07-24 10:29:13] [INFO] Tipo de disco raíz: NVMe
+[2026-07-24 10:29:13] [INFO] Navegadores detectados: firefox google-chrome brave-browser
+[2026-07-24 10:29:13] [INFO] IDEs detectados: code kate
+[2026-07-24 10:29:13] [INFO] Lenguajes detectados: python3 node nodejs php gcc g++ clang
+[2026-07-24 10:29:13] [INFO] Contenedores detectados: docker
+[2026-07-24 10:29:13] [INFO] Virtualización: none
+[2026-07-24 10:29:13] [INFO] Es laptop: true
+[2026-07-24 10:29:13] [INFO] Total plugins cargados: 0
+[2026-07-24 10:29:13] [INFO] Configuración cargada desde: /home/n4p5t3r/linux-system-optimizer/config/settings.conf
+[2026-07-24 10:29:13] [INFO] Iniciando módulo: dev_environment
+[2026-07-24 10:29:14] [SUCCESS] Módulo completado: dev_environment
+[2026-07-24 10:29:14] [INFO] === Linux System Optimizer finalizado ===

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>LSO Report - zeus</title>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #1a73e8; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+        h2 { color: #333; margin-top: 30px; border-left: 4px solid #1a73e8; padding-left: 10px; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .stat:last-child { border-bottom: none; }
+        .label { color: #666; font-weight: 500; }
+        .value { color: #1a73e8; font-weight: 600; }
+        .success { color: #0f9d58; }
+        .warning { color: #f4b400; }
+        .error { color: #db4437; }
+        .footer { text-align: center; color: #999; margin-top: 40px; font-size: 0.9em; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <h1>🐧 Linux System Optimizer — Reporte</h1>
+
+    <div class="card">
+        <h2>📋 Información General</h2>
+        <div class="grid">
+            <div class="stat"><span class="label">Hostname</span><span class="value">zeus</span></div>
+            <div class="stat"><span class="label">Fecha</span><span class="value">vie 24 jul 2026 10:28:56 -05</span></div>
+            <div class="stat"><span class="label">Uptime</span><span class="value">up 1 hour, 12 minutes</span></div>
+            <div class="stat"><span class="label">Kernel</span><span class="value">7.0.0-28-generic</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>💻 Hardware</h2>
+        <div class="grid">
+            <div class="stat"><span class="label">CPU</span><span class="value">AMD Ryzen 3 3250U with Radeon Graphics</span></div>
+            <div class="stat"><span class="label">Cores/Threads</span><span class="value">4 / 4</span></div>
+            <div class="stat"><span class="label">RAM Total</span><span class="value">13.56GiB</span></div>
+            <div class="stat"><span class="label">GPU</span><span class="value">Advanced Micro Devices, Inc. [AMD/ATI] Picasso/Raven 2 [Radeon Vega Series / Radeon Vega Mobile Series] (rev c4)</span></div>
+            <div class="stat"><span class="label">Disco Raíz</span><span class="value">NVMe</span></div>
+            <div class="stat"><span class="label">Laptop</span><span class="value">true</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🖥️ Sistema</h2>
+        <div class="grid">
+            <div class="stat"><span class="label">Distribución</span><span class="value">Linux Mint</span></div>
+            <div class="stat"><span class="label">Versión</span><span class="value">22.3</span></div>
+            <div class="stat"><span class="label">Escritorio</span><span class="value">kde</span></div>
+            <div class="stat"><span class="label">Gestor de Paquetes</span><span class="value">apt</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📊 Uso Actual</h2>
+        <pre>               total       usado       libre  compartido   búf/caché  disponible
+Mem:            13Gi        10Gi       275Mi       376Mi       3,2Gi       2,8Gi
+Inter:          17Gi       204Ki        17Gi
+
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+/dev/nvme0n1p2   234G   140G   82G  64% /
+
+Load Average: 1.57 1.29 1.55 2/1925 79220</pre>
+    </div>
+
+    <div class="card">
+        <h2>🔧 Software Detectado</h2>
+        <div class="grid">
+            <div class="stat"><span class="label">Navegadores</span><span class="value">firefox google-chrome brave-browser</span></div>
+            <div class="stat"><span class="label">IDEs</span><span class="value">code kate</span></div>
+            <div class="stat"><span class="label">Contenedores</span><span class="value">docker</span></div>
+            <div class="stat"><span class="label">Virtualización</span><span class="value">none</span></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Generado por Linux System Optimizer v0.2.0</p>
+        <p>Reporte guardado en: /home/n4p5t3r/linux-system-optimizer/reports/lso-report-20260724-102856.html</p>
+    </div>
+</body>
+</html>

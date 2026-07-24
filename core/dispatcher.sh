@@ -20,13 +20,14 @@ USO:
 COMANDOS:
     analyze, -a              Analizar el sistema completo
     optimize, -o [perfil]    Ejecutar optimización (perfiles: desktop, laptop,
-                             gaming, workstation, server)
+                             gaming, workstation, server, dev)
     module, -m <nombre>      Ejecutar módulo específico
     detect, -d               Mostrar información de detección del sistema
     restore, -r              Restaurar configuraciones desde backups
     report                   Generar reporte del último análisis
     plugins                  Listar plugins disponibles
     benchmark                Ejecutar benchmarks del sistema
+    rules                    Evaluar el motor de reglas (config/rules/*.rules)
     help, -h                 Mostrar esta ayuda
     version, -v              Mostrar versión
 
@@ -36,11 +37,15 @@ OPCIONES:
     --debug                  Modo debug (salida verbosa)
     --profile <nombre>       Especificar perfil de optimización
     --backup                 Crear backup antes de cualquier cambio
+    --full                   Con 'module package_optimizer': incluye
+                             actualización completa del sistema (upgrade)
 
 EJEMPLOS:
     sudo lso analyze
     sudo lso optimize --profile gaming
     sudo lso module memory_optimizer
+    sudo lso module package_optimizer --full
+    sudo lso rules --dry-run
     sudo lso -o laptop --dry-run
 
 AUTOR:
@@ -110,6 +115,10 @@ parse_args() {
                 LSO_COMMAND="benchmark"
                 shift
                 ;;
+            rules)
+                LSO_COMMAND="rules"
+                shift
+                ;;
             help|-h|--help)
                 LSO_COMMAND="help"
                 shift
@@ -141,6 +150,10 @@ parse_args() {
                 ;;
             --backup)
                 LSO_AUTO_BACKUP=true
+                shift
+                ;;
+            --full)
+                LSO_FULL=true
                 shift
                 ;;
             *)
@@ -194,6 +207,9 @@ dispatch() {
             ;;
         benchmark)
             run_module "benchmark"
+            ;;
+        rules)
+            run_rule_engine
             ;;
         version)
             show_version

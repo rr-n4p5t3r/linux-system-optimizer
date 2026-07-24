@@ -11,6 +11,30 @@
 
 LSO_RULES_DIR="${LSO_BASE_DIR}/config/rules"
 
+# Resuelve un valor de condición antes de una comparación numérica:
+# sustituye la referencia simbólica "cores" por LSO_CPU_CORES (permite
+# expresiones como "cores * 2") y normaliza sufijos de tamaño (GB/MB/KB/TB/B)
+# a GB, la misma escala que ya usan las variables ram_total y browser_cache.
+_lso_resolve_numeric_value() {
+    local val="$1"
+
+    val=$(echo "$val" | sed -E "s/\bcores\b/${LSO_CPU_CORES:-1}/g")
+
+    if [[ "$val" =~ ^([0-9.]+)[[:space:]]*([KkMmGgTt]?[Bb])$ ]]; then
+        local num="${BASH_REMATCH[1]}"
+        local unit="${BASH_REMATCH[2],,}"
+        case "$unit" in
+            b)  val=$(awk "BEGIN {printf \"%.6f\", $num / 1073741824}") ;;
+            kb) val=$(awk "BEGIN {printf \"%.6f\", $num / 1048576}") ;;
+            mb) val=$(awk "BEGIN {printf \"%.6f\", $num / 1024}") ;;
+            gb) val="$num" ;;
+            tb) val=$(awk "BEGIN {printf \"%.6f\", $num * 1024}") ;;
+        esac
+    fi
+
+    echo "$val"
+}
+
 evaluate_condition() {
     local condition="$1"
     local result=false
@@ -18,7 +42,7 @@ evaluate_condition() {
     local var op val
     var=$(echo "$condition" | awk '{print $1}')
     op=$(echo "$condition" | awk '{print $2}')
-    val=$(echo "$condition" | awk '{print $3}')
+    val=$(echo "$condition" | cut -d' ' -f3-)
 
     local current_val=""
     case "$var" in
@@ -27,10 +51,10 @@ evaluate_condition() {
             ;;
         cpu_usage)
             current_val=$(awk '{print $1}' < /proc/loadavg)
-            current_val=$(awk "BEGIN {printf "%.0f", $current_val / $LSO_CPU_CORES * 100}")
+            current_val=$(awk "BEGIN {printf \"%.0f\", $current_val / $LSO_CPU_CORES * 100}")
             ;;
         swap_usage)
-            current_val=$(free | awk '/^Swap:/{if($2>0) printf "%.0f", $3/$2 * 100; else print 0}')
+            current_val=$(LC_ALL=C free | awk '/^Swap:/{if($2>0) printf "%.0f", $3/$2 * 100; else print 0}')
             ;;
         distro)
             current_val="$LSO_DISTRO_ID"
@@ -59,6 +83,20 @@ evaluate_condition() {
         load_average)
             current_val=$(awk '{print $1}' < /proc/loadavg)
             ;;
+        browser_cache)
+            local total_bytes=0
+            local cache_dir
+            for cache_dir in "$HOME/.cache/mozilla" "$HOME/.cache/google-chrome" \
+                "$HOME/.cache/chromium" "$HOME/.cache/BraveSoftware" \
+                "$HOME/.cache/opera" "$HOME/.cache/vivaldi"; do
+                if [[ -d "$cache_dir" ]]; then
+                    local dsize
+                    dsize=$(du -sb "$cache_dir" 2>/dev/null | cut -f1)
+                    total_bytes=$((total_bytes + ${dsize:-0}))
+                fi
+            done
+            current_val=$(awk "BEGIN {printf \"%.6f\", $total_bytes / 1073741824}")
+            ;;
         *)
             current_val=""
             ;;
@@ -71,17 +109,21 @@ evaluate_condition() {
         !=)
             [[ "$current_val" != "$val" ]] && result=true
             ;;
-        >)
-            awk "BEGIN {exit !($current_val > $val)}" && result=true
+        ">")
+            val=$(_lso_resolve_numeric_value "$val")
+            awk "BEGIN {exit !($current_val > ($val))}" && result=true
             ;;
-        <)
-            awk "BEGIN {exit !($current_val < $val)}" && result=true
+        "<")
+            val=$(_lso_resolve_numeric_value "$val")
+            awk "BEGIN {exit !($current_val < ($val))}" && result=true
             ;;
-        >=)
-            awk "BEGIN {exit !($current_val >= $val)}" && result=true
+        ">=")
+            val=$(_lso_resolve_numeric_value "$val")
+            awk "BEGIN {exit !($current_val >= ($val))}" && result=true
             ;;
-        <=)
-            awk "BEGIN {exit !($current_val <= $val)}" && result=true
+        "<=")
+            val=$(_lso_resolve_numeric_value "$val")
+            awk "BEGIN {exit !($current_val <= ($val))}" && result=true
             ;;
     esac
 
@@ -108,9 +150,11 @@ load_rules() {
 
         if [[ "$condition" == *"&&"* ]]; then
             local all_match=true
-            IFS='&&' read -ra parts <<< "$condition"
+            local parts=()
+            mapfile -t parts <<< "${condition//&&/$'\n'}"
             for part in "${parts[@]}"; do
                 part=$(echo "$part" | sed 's/^ *//;s/ *$//')
+                [[ -z "$part" ]] && continue
                 if ! evaluate_condition "$part"; then
                     all_match=false
                     break
@@ -166,6 +210,12 @@ execute_rule_action() {
             ;;
         alert_high_load)
             log_warn "ALTA CARGA: Load average excede capacidad de CPU"
+            ;;
+        clean_browser_cache)
+            run_module "cache_cleaner" 2>/dev/null || true
+            ;;
+        optimize_firefox|optimize_chromium)
+            run_module "browser_optimizer" 2>/dev/null || true
             ;;
         optimize_*)
             local target="${action#optimize_}"

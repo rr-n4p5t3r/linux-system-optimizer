@@ -18,6 +18,8 @@ distro == elementary -> optimize_elementary
 distro == mxlinux -> optimize_mxlinux
 distro == nobara -> optimize_nobara
 distro == arch -> optimize_arch
+distro == manjaro -> optimize_manjaro
+distro == endeavouros -> optimize_endeavouros
 distro == opensuse -> optimize_opensuse
 distro == rocky -> optimize_rocky
 distro == almalinux -> optimize_almalinux

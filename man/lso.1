@@ -1,0 +1,202 @@
+.TH LSO 1 "24 de julio de 2026" "LSO 0.2.0-alpha" "Linux System Optimizer"
+.SH NOMBRE
+lso \- framework modular para analizar, optimizar y mantener distribuciones GNU/Linux
+.SH SINOPSIS
+.B sudo lso
+[\fICOMANDO\fR] [\fIOPCIONES\fR]
+.SH DESCRIPCIÓN
+.B Linux System Optimizer
+(LSO) detecta automáticamente la distribución, el escritorio y el hardware del
+sistema, y aplica optimizaciones seguras y reversibles a través de módulos
+independientes, perfiles preconfigurados y un motor de reglas condicionales.
+.PP
+Todas las operaciones que modifican el sistema respetan
+.B \-\-dry\-run
+(simulación sin cambios), piden confirmación interactiva salvo que se use
+.B \-\-force ,
+y los cambios sobre archivos de configuración se respaldan automáticamente en
+.I backups/
+cuando está habilitado.
+.SH COMANDOS
+.TP
+.BR analyze ", " \-a
+Analiza el sistema completo (CPU, memoria, disco, procesos, servicios, cachés,
+temperaturas) y guarda un reporte en \fIreports/\fR.
+.TP
+.BR optimize ", " \-o " [\fIperfil\fR]"
+Ejecuta los módulos del perfil indicado (o \fBdesktop\fR por defecto), seguido
+del motor de reglas y de un reporte final. Pide confirmación única antes de
+aplicar cambios, salvo con \fB\-\-force\fR.
+.TP
+.BR module ", " \-m " \fInombre\fR"
+Ejecuta un único módulo de \fImodules/\fR de forma aislada.
+Ejemplo: \fBlso module memory_optimizer\fR.
+.TP
+.BR detect ", " \-d
+Muestra un resumen de la detección del sistema (distro, escritorio, gestor de
+paquetes, CPU, RAM, GPU, disco, navegadores, virtualización).
+.TP
+.BR restore ", " \-r
+Restaura configuraciones desde los backups guardados en \fIbackups/\fR.
+Permite restaurar uno, todos, o eliminarlos.
+.TP
+.B report
+Genera un reporte del último análisis (equivalente a \fBmodule report\fR).
+.TP
+.B plugins
+Lista los plugins disponibles en \fIplugins/\fR y su estado de carga.
+.TP
+.B benchmark
+Ejecuta benchmarks básicos del sistema.
+.TP
+.B rules
+Evalúa el motor de reglas condicionales (\fIconfig/rules/*.rules\fR) de forma
+aislada, sin correr un perfil completo. Útil para probar reglas nuevas con
+\fB\-\-dry\-run\fR.
+.TP
+.BR help ", " \-h
+Muestra la ayuda de uso.
+.TP
+.BR version ", " \-v
+Muestra la versión instalada.
+.SH OPCIONES
+.TP
+.B \-\-dry\-run
+Simula la ejecución sin aplicar ningún cambio real al sistema.
+.TP
+.BR \-\-force ", " \-f
+Salta las confirmaciones interactivas.
+.TP
+.B \-\-debug
+Activa salida verbosa (modo debug).
+.TP
+.B \-\-profile \fInombre\fR
+Especifica el perfil de optimización a usar con \fBoptimize\fR.
+.TP
+.B \-\-backup
+Fuerza la creación de un backup antes de cualquier cambio permanente.
+.TP
+.B \-\-full
+Solo aplica a \fBmodule package_optimizer\fR: además de limpiar caché y quitar
+paquetes huérfanos, ejecuta también la actualización completa del sistema
+(\fIupgrade\fR), con una confirmación explícita adicional por tratarse de la
+acción de mayor impacto de todo el framework.
+.SH PERFILES
+Cada perfil define una lista fija de módulos que se ejecutan en orden con
+.BR optimize ,
+seguidos siempre del motor de reglas y del reporte final.
+.TP
+.B desktop
+analyzer, memory_optimizer, cpu_optimizer, process_manager, service_manager,
+startup_manager, desktop_optimizer, browser_optimizer, cache_cleaner,
+package_optimizer.
+.TP
+.B laptop
+Igual que \fBdesktop\fR, más \fBswap\fR (ajuste de swappiness y
+vfs_cache_pressure orientado a SSD/NVMe).
+.TP
+.B gaming
+Igual que \fBdesktop\fR pero sin \fBcache_cleaner\fR y con \fBdisk_optimizer\fR
+en su lugar.
+.TP
+.B workstation
+Igual que \fBdesktop\fR, más \fBdisk_optimizer\fR y \fBnetwork_optimizer\fR.
+.TP
+.B server
+analyzer, memory_optimizer, cpu_optimizer, process_manager, service_manager,
+disk_optimizer, network_optimizer, journal_optimizer, cache_cleaner,
+package_optimizer (sin módulos de escritorio ni navegador).
+.TP
+.B dev
+Estación de desarrollo: analyzer, memory_optimizer, cpu_optimizer,
+process_manager, service_manager, startup_manager, \fBdev_environment\fR,
+cache_cleaner, package_optimizer. El módulo \fBdev_environment\fR ajusta el
+límite de \fIinotify\fR (\fBfs.inotify.max_user_watches\fR, suele agotarse
+con VS Code/webpack y similares), detecta motores de base de datos instalados
+(MySQL/MariaDB, PostgreSQL, MongoDB, Redis) y ofrece iniciarlos y habilitarlos
+con confirmación por servicio, y reporta herramientas de entornos virtuales y
+gestores de versiones presentes (venv, conda, pyenv, nvm, rbenv, rvm, docker,
+podman). Configurable vía \fIconfig/profiles/dev.conf\fR
+(\fBLSO_DEV_START_DATABASES\fR, \fBLSO_DEV_INCREASE_INOTIFY\fR,
+\fBLSO_DEV_INOTIFY_WATCHES\fR).
+.SH MOTOR DE REGLAS
+Los archivos en
+.I config/rules/*.rules
+(\fBbrowser\fR, \fBcpu\fR, \fBdesktop\fR, \fBdistro\fR, \fBmemory\fR) definen
+reglas condicionales con la sintaxis:
+.PP
+.RS
+\fIvariable operador valor\fR [\fB&&\fR \fIvariable operador valor\fR ...] \fB\->\fR \fIacción\fR
+.RE
+.PP
+Variables soportadas: \fBram_usage\fR, \fBcpu_usage\fR, \fBswap_usage\fR,
+\fBdistro\fR, \fBdesktop\fR, \fBbrowser\fR, \fBbrowser_cache\fR (tamaño en GB
+de las cachés de navegador detectadas), \fBprofile\fR, \fBcpu_cores\fR,
+\fBcpu_governor\fR, \fBzram_available\fR, \fBram_total\fR, \fBload_average\fR.
+.PP
+Operadores: \fB==\fR, \fB!=\fR, \fB>\fR, \fB<\fR, \fB>=\fR, \fB<=\fR.
+.PP
+Los valores numéricos aceptan la referencia simbólica \fBcores\fR (se
+sustituye por el número de núcleos detectados, permitiendo expresiones como
+\fBcores * 2\fR) y sufijos de tamaño \fBGB\fR/\fBMB\fR/\fBKB\fR/\fBTB\fR/\fBB\fR
+(normalizados a GB antes de comparar). Ejemplo:
+.PP
+.RS
+ram_usage > 85 \-> analyze_processes
+.br
+zram_available == true && ram_total < 4GB \-> setup_zram
+.br
+browser_cache > 1GB \-> clean_browser_cache
+.RE
+.PP
+Pruébalo de forma aislada con \fBsudo lso rules \-\-dry\-run\fR.
+.SH ARCHIVOS
+.TP
+.I config/settings.conf
+Configuración global (umbrales, swappiness, zram, journald, red).
+.TP
+.I config/profiles/*.conf
+Un archivo por perfil (desktop, laptop, gaming, workstation, server, dev).
+.TP
+.I config/rules/*.rules
+Reglas del motor de reglas condicionales.
+.TP
+.I config/whitelist.conf ", " config/blacklist.conf
+Procesos/servicios excluidos o forzados en las decisiones de optimización.
+.TP
+.I logs/
+Logs con rotación automática (fallback a \fI/tmp\fR si no es escribible).
+.TP
+.I backups/
+Copias de seguridad de archivos modificados, con marca de tiempo.
+.TP
+.I reports/
+Reportes de análisis en texto plano.
+.TP
+.I plugins/
+Plugins de terceros, cargados automáticamente al iniciar.
+.SH EJEMPLOS
+.TP
+sudo lso analyze
+Analiza el sistema sin modificar nada.
+.TP
+sudo lso optimize \-\-profile gaming
+Optimiza el sistema con el perfil gaming, pidiendo confirmación.
+.TP
+sudo lso \-o laptop \-\-dry\-run
+Simula la optimización con el perfil laptop, sin aplicar cambios.
+.TP
+sudo lso module package_optimizer \-\-full
+Limpia caché de paquetes, quita huérfanos y actualiza el sistema completo.
+.TP
+sudo lso optimize \-\-profile dev
+Optimiza una estación de desarrollo: inotify, motores de base de datos,
+entornos virtuales y limpieza de caché.
+.TP
+sudo lso rules \-\-dry\-run
+Evalúa el motor de reglas en modo simulación.
+.SH VÉASE TAMBIÉN
+.I README.md ", " CHANGELOG.md
+en la raíz del repositorio.
+.SH AUTOR
+Ricardo Rosero <rrosero2000@gmail.com> \(em https://github.com/rr-n4p5t3r

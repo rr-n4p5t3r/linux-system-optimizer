@@ -65,6 +65,7 @@ detect_distro() {
         nobara)        LSO_DISTRO_ID="nobara" ;;
         arch)          LSO_DISTRO_ID="arch" ;;
         manjaro)       LSO_DISTRO_ID="manjaro" ;;
+        endeavouros)   LSO_DISTRO_ID="endeavouros" ;;
         opensuse*|suse*) LSO_DISTRO_ID="opensuse" ;;
         rocky)         LSO_DISTRO_ID="rocky" ;;
         almalinux)     LSO_DISTRO_ID="almalinux" ;;
@@ -299,7 +300,9 @@ detect_virtualization() {
     elif [[ -f /proc/1/cgroup ]] && grep -q "docker" /proc/1/cgroup 2>/dev/null; then
         LSO_VIRTUALIZATION="Docker"
     elif command -v systemd-detect-virt &>/dev/null; then
-        LSO_VIRTUALIZATION=$(systemd-detect-virt 2>/dev/null || echo "none")
+        local detected_virt
+        detected_virt=$(systemd-detect-virt 2>/dev/null)
+        LSO_VIRTUALIZATION="${detected_virt:-none}"
     elif [[ -f /sys/class/dmi/id/product_name ]]; then
         local product
         product=$(cat /sys/class/dmi/id/product_name 2>/dev/null || echo "")

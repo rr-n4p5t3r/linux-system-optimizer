@@ -78,6 +78,19 @@ chmod -R 755 "$INSTALL_DIR/distros"
 chmod -R 755 "$INSTALL_DIR/desktops"
 chmod -R 755 "$INSTALL_DIR/package_managers"
 
+echo "📖 Instalando página de manual..."
+MAN_DIR="/usr/local/share/man/man1"
+[[ -d "/usr/share/man/man1" ]] && MAN_DIR="/usr/share/man/man1"
+if [[ -f "$INSTALL_DIR/man/lso.1" ]]; then
+    mkdir -p "$MAN_DIR" 2>/dev/null && \
+        cp "$INSTALL_DIR/man/lso.1" "$MAN_DIR/lso.1" 2>/dev/null && \
+        chmod 644 "$MAN_DIR/lso.1" && \
+        echo "✅ Página de manual instalada en $MAN_DIR (usa: man lso)" || \
+        echo "⚠️  No se pudo instalar la página de manual"
+    command -v mandb &>/dev/null && mandb --quiet 2>/dev/null || true
+    command -v makewhatis &>/dev/null && makewhatis 2>/dev/null || true
+fi
+
 echo "🔍 Verificando instalación..."
 if [[ -L "$BIN_LINK" ]] && [[ -x "$BIN_LINK" ]]; then
     echo "✅ Enlace simbólico creado correctamente"
@@ -101,6 +114,7 @@ echo "   sudo lso optimize           # Optimizar con perfil desktop"
 echo "   sudo lso optimize --profile gaming"
 echo "   sudo lso detect             # Ver información del sistema"
 echo "   sudo lso -h                 # Ayuda completa"
+echo "   man lso                     # Manual completo"
 echo
 echo "🗂️  Instalado en: $INSTALL_DIR"
 echo "🔗 Comando: lso"
