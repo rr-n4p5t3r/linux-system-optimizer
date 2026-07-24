@@ -6,7 +6,7 @@
 # Versión: 0.1.0-alpha
 # Autor: Ricardo Rosero <rrosero2000@gmail.com>
 # GitHub: https://github.com/rr-n4p5t3r
-# Licencia: MIT
+# Licencia: GPLv3
 # =============================================================================
 
 # NO usar set -e — queremos manejar errores nosotros mismos

@@ -55,6 +55,15 @@ pero nunca se terminaron de construir o quedaron desconectadas del flujo real.
   `man/lso.1` (sección `PERFILES`, con ejemplo en `EJEMPLOS` y las variables
   de `dev.conf` referenciadas en `ARCHIVOS`).
 
+### Cambiado
+- **Licencia: MIT → GPLv3**. `LICENSE` ahora contiene el texto oficial y
+  verbatim de la GNU General Public License v3.0 (obtenido directamente de
+  `gnu.org`, sin resumir ni parafrasear). Actualizado en `VERSION`,
+  `README.md`, `man/lso.1` (nueva sección `LICENCIA`) y en la cabecera
+  `# Licencia:` de los 34 scripts que la mencionaban. A diferencia de MIT,
+  GPLv3 es copyleft: las versiones modificadas que se distribuyan deben
+  liberarse también bajo GPLv3 con el código fuente disponible.
+
 ### Corregido
 - **`core/rule_engine.sh` — split de condiciones `&&` roto**: usaba
   `IFS='&&' read -ra parts <<< "$condition"`, pero `IFS` es un *conjunto* de

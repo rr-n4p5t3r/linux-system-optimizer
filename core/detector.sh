@@ -5,7 +5,7 @@
 # Linux System Optimizer (LSO)
 # Autor: Ricardo Rosero <rrosero2000@gmail.com>
 # GitHub: https://github.com/rr-n4p5t3r
-# Licencia: MIT
+# Licencia: GPLv3
 # =============================================================================
 
 LSO_DISTRO=""

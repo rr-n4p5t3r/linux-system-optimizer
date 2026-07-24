@@ -89,7 +89,11 @@ linux-system-optimizer/
 
 ## Licencia
 
-MIT License — ver archivo LICENSE
+GNU General Public License v3.0 (GPLv3) — ver archivo LICENSE
+
+Software libre: puedes usarlo, estudiarlo, modificarlo y redistribuirlo. Si
+distribuyes una versión modificada, debes liberarla también bajo GPLv3, con
+el código fuente disponible.
 
 ---
 
