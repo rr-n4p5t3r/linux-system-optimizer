@@ -55,6 +55,15 @@ pero nunca se terminaron de construir o quedaron desconectadas del flujo real.
   `man/lso.1` (sección `PERFILES`, con ejemplo en `EJEMPLOS` y las variables
   de `dev.conf` referenciadas en `ARCHIVOS`).
 
+### Añadido (continuación)
+- **`.github/SECURITY.md`**: política de seguridad real, en lugar de la
+  plantilla genérica de GitHub. Ajustada al estado del proyecto (fase
+  alpha, un solo mantenedor, sin versiones paralelas que mantener) y al
+  hecho de que LSO corre como root y modifica el sistema — prioriza
+  reportes de inyección de comandos, escalado de privilegios y escritura
+  insegura de archivos. Habilita el botón "Report a vulnerability" de
+  GitHub (Private Vulnerability Reporting).
+
 ### Cambiado
 - **Licencia: MIT → GPLv3**. `LICENSE` ahora contiene el texto oficial y
   verbatim de la GNU General Public License v3.0 (obtenido directamente de
