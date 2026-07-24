@@ -56,6 +56,16 @@ pero nunca se terminaron de construir o quedaron desconectadas del flujo real.
   de `dev.conf` referenciadas en `ARCHIVOS`).
 
 ### Añadido (continuación)
+- **`.github/workflows/ci.yml`**: CI en GitHub Actions (push y pull request
+  a `main`) que corre `bash -n` y `shellcheck --severity=warning` sobre
+  todos los `.sh` del repo — las mismas verificaciones que se venían
+  haciendo a mano durante esta sesión.
+- **`.github/dependabot.yml`**: en vez de la plantilla genérica de GitHub
+  (que pedía un `package-ecosystem` inventado — LSO no tiene
+  `package.json`/`requirements.txt`/`Gemfile` ni ningún otro manifiesto de
+  dependencias, es Bash puro), se configuró `package-ecosystem:
+  "github-actions"`, el único ecosistema real del repo: mantiene
+  actualizadas las Actions usadas en `ci.yml` (`actions/checkout`).
 - **`.github/SECURITY.md`**: política de seguridad real, en lugar de la
   plantilla genérica de GitHub. Ajustada al estado del proyecto (fase
   alpha, un solo mantenedor, sin versiones paralelas que mantener) y al

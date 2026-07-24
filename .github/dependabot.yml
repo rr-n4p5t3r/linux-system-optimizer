@@ -1,0 +1,13 @@
+# LSO es Bash puro: no hay package.json/requirements.txt/Gemfile/go.mod ni
+# ningún otro manifiesto de dependencias que Dependabot pueda rastrear. El
+# único ecosistema real en este repo son las GitHub Actions usadas en
+# .github/workflows/ (ver ci.yml) — esto las mantiene actualizadas.
+#
+# Documentación: https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
