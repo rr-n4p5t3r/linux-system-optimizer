@@ -50,6 +50,7 @@ for lib in colors logger utils; do
         echo "ERROR: No se encontró ${lib}.sh en ${LSO_BASE_DIR}/lib/" >&2
         exit 1
     fi
+    # shellcheck source=/dev/null
     source "$lib_path" || {
         echo "ERROR: No se pudo cargar ${lib}.sh" >&2
         exit 1
@@ -62,6 +63,7 @@ for core in detector plugin_loader engine rule_engine dispatcher; do
         echo "ERROR: No se encontró ${core}.sh en ${LSO_BASE_DIR}/core/" >&2
         exit 1
     fi
+    # shellcheck source=/dev/null
     source "$core_path" || {
         echo "ERROR: No se pudo cargar ${core}.sh" >&2
         exit 1

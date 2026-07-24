@@ -83,7 +83,52 @@ pero nunca se terminaron de construir o quedaron desconectadas del flujo real.
   GPLv3 es copyleft: las versiones modificadas que se distribuyan deben
   liberarse también bajo GPLv3 con el código fuente disponible.
 
-### Corregido
+### Corregido (ShellCheck / primera corrida de CI)
+Hallazgos reales del primer run de `.github/workflows/ci.yml` en GitHub.
+- **`modules/analyzer.sh` (SC2071, bug real)**: el color de la RAM se
+  decidía con `[[ "$ram_percent" > "85" ]]`, una comparación de **strings**
+  dentro de `[[ ]]`, no numérica. Con un valor como `"9.5"`, la comparación
+  de strings da `"9.5" > "85"` = verdadero (`'9' > '8'` lexicográficamente),
+  pintando de rojo un uso de RAM del 9.5%. Corregido comparando con `awk`,
+  igual que ya se hace en el resto del archivo.
+- **`distros/{arch,manjaro,endeavouros}.sh` (mismo bug de comillas anidadas
+  encontrado antes en esta versión, esta vez en el ajuste de `MAKEFLAGS`)**:
+  `sed -i "s/.../MAKEFLAGS="-j$(nproc)"/"` perdía las comillas internas por
+  el mismo motivo que los bugs de `awk` ya corregidos — el resultado en
+  `/etc/makepkg.conf` quedaba como `MAKEFLAGS=-j4` en vez de
+  `MAKEFLAGS="-j4"`. Arch tenía el bug desde antes de esta sesión; Manjaro y
+  EndeavourOS lo heredaron al copiar su estructura. Corregido escapando las
+  comillas internas en los 3 archivos.
+- **`modules/zram.sh` (SC2046)**: ruta de destino de una redirección sin
+  comillas (`/sys/block/$(basename ...)/disksize`), vulnerable a
+  word-splitting. Corregido citando la ruta completa.
+- **`package_managers/zypper.sh` (SC2046)**: `zypper rm $(...)` sin comillas
+  dependía de word-splitting para pasar varios paquetes como argumentos
+  separados — funcionaba pero de forma fragil. Reescrito con `mapfile` y un
+  array, más robusto y sin depender de `IFS`.
+- **Variables muertas eliminadas**: `prefs` en `browser_optimizer.sh`,
+  `dm_name` en `detector.sh`, `avail` en `analyzer.sh` — declaradas pero
+  nunca usadas.
+- **`modules/process_manager.sh`**: `LSO_CANDIDATE_PROCESES` estaba
+  declarada pero nunca se usaba — el loop de `renice` tenía una lista
+  hardcodeada de solo 4 de los 12 procesos candidatos. Ahora itera sobre el
+  array completo. `LSO_CRITICAL_PROCESSES` queda documentada con
+  `shellcheck disable=SC2034`: ningún punto de este módulo mata procesos
+  por nombre todavía (solo zombies), así que no hay donde consultarla hoy;
+  se deja como referencia para módulos futuros.
+- **SC2155 (declare-and-assign)** en `lib/utils.sh`, `modules/report.sh` y
+  `modules/analyzer.sh`: variables `local` separadas de su asignación con
+  `$(...)`, para no enmascarar el código de salida del subcomando.
+- **SC1090 (source dinámico) y SC2034 (falsos positivos de variables no
+  usadas)**: no son bugs sino inherentes a la arquitectura del proyecto —
+  9 sitios hacen `source` de una ruta calculada en tiempo de ejecución
+  (carga de módulos/perfiles/plugins/distros/escritorios por nombre), y
+  varias variables (flags de `dispatcher.sh`, paleta de `colors.sh`) se
+  usan en otros archivos `sourced` dentro del mismo shell, no en el propio
+  archivo. Documentados explícitamente con directivas
+  `# shellcheck source=/dev/null` y `# shellcheck disable=SC2034` en cada
+  sitio, en vez de ocultarlos con un umbral de severidad más alto.
+
 - **`core/rule_engine.sh` — split de condiciones `&&` roto**: usaba
   `IFS='&&' read -ra parts <<< "$condition"`, pero `IFS` es un *conjunto* de
   caracteres, no un separador de string — equivalía a partir por cada `&`

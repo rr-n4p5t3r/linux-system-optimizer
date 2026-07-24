@@ -37,7 +37,9 @@ setup_zram() {
         zram_dev=$(ls /dev/zram* 2>/dev/null | tail -1)
 
         if [[ -n "$zram_dev" ]]; then
-            echo "${zram_size_mb}M" > /sys/block/$(basename "$zram_dev")/disksize 2>/dev/null
+            local zram_block
+            zram_block=$(basename "$zram_dev")
+            echo "${zram_size_mb}M" > "/sys/block/${zram_block}/disksize" 2>/dev/null
             mkswap "$zram_dev" &>/dev/null
             swapon "$zram_dev" -p 100 &>/dev/null
 

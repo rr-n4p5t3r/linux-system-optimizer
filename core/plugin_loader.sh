@@ -27,6 +27,7 @@ load_plugin() {
     done
 
     log_info "Cargando plugin: $plugin_name"
+    # shellcheck source=/dev/null
     source "$plugin_path"
     LSO_LOADED_PLUGINS+=("$plugin_name")
     log_success "Plugin cargado: $plugin_name"

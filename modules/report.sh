@@ -6,7 +6,8 @@
 generate_report() {
     print_header "GENERANDO REPORTE"
 
-    local report_file="${LSO_BASE_DIR}/reports/lso-report-$(date +%Y%m%d-%H%M%S).html"
+    local report_file
+    report_file="${LSO_BASE_DIR}/reports/lso-report-$(date +%Y%m%d-%H%M%S).html"
     mkdir -p "${LSO_BASE_DIR}/reports"
 
     # Recopilar datos

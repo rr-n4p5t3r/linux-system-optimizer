@@ -128,14 +128,17 @@ parse_args() {
                 shift
                 ;;
             --dry-run)
+                # shellcheck disable=SC2034 # consumida por otros módulos sourced en el mismo shell
                 LSO_DRY_RUN=true
                 shift
                 ;;
             --force|-f)
+                # shellcheck disable=SC2034 # consumida por otros módulos sourced en el mismo shell
                 LSO_FORCE=true
                 shift
                 ;;
             --debug)
+                # shellcheck disable=SC2034 # consumida por otros módulos sourced en el mismo shell
                 LSO_DEBUG=1
                 shift
                 ;;
@@ -149,10 +152,12 @@ parse_args() {
                 fi
                 ;;
             --backup)
+                # shellcheck disable=SC2034 # consumida por otros módulos sourced en el mismo shell
                 LSO_AUTO_BACKUP=true
                 shift
                 ;;
             --full)
+                # shellcheck disable=SC2034 # consumida por otros módulos sourced en el mismo shell
                 LSO_FULL=true
                 shift
                 ;;

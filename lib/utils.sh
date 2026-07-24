@@ -50,7 +50,8 @@ service_exists() {
 backup_file() {
     local file="$1"
     local backup_dir="${LSO_BASE_DIR}/backups"
-    local backup_path="${backup_dir}/$(basename "$file").$(date +%s).bak"
+    local backup_path
+    backup_path="${backup_dir}/$(basename "$file").$(date +%s).bak"
 
     mkdir -p "$backup_dir" 2>/dev/null || {
         backup_dir="/tmp/lso-backups"

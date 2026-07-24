@@ -17,7 +17,9 @@ zypper_upgrade() {
 }
 
 zypper_autoremove() {
-    zypper --non-interactive rm $(zypper --quiet packages --unneeded | awk '{print $3}') 2>/dev/null || true
+    local pkgs=()
+    mapfile -t pkgs < <(zypper --quiet packages --unneeded 2>/dev/null | awk '{print $3}')
+    [[ ${#pkgs[@]} -gt 0 ]] && zypper --non-interactive rm "${pkgs[@]}" 2>/dev/null || true
 }
 
 zypper_clean() {

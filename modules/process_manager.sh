@@ -3,7 +3,13 @@
 # process_manager.sh — Gestor y optimizador de procesos
 # =============================================================================
 
-# Lista de procesos que NUNCA deben terminarse (críticos)
+# Lista de procesos que NUNCA deben terminarse (críticos). Documenta el
+# principio "No finalizar procesos críticos automáticamente" (ver README);
+# este módulo solo actúa sobre zombies y sobre LSO_CANDIDATE_PROCESES, así
+# que hoy no hay ningún punto que necesite consultarla, pero se deja
+# declarada como referencia para módulos futuros que maten procesos por
+# nombre.
+# shellcheck disable=SC2034
 LSO_CRITICAL_PROCESSES=(
     "systemd" "init" "kernel" "kthreadd" "sshd" "bash" "login"
     "Xorg" "Xwayland" "gnome-shell" "plasmashell" "cinnamon"
@@ -54,8 +60,8 @@ optimize_processes() {
     # --- Optimizar nice de procesos pesados ---
     print_step "Ajustando prioridades de procesos..."
 
-    # Bajar prioridad de indexadores de archivos
-    for proc in "tracker-miner" "baloo_file" "baloo_file_extractor" "zeitgeist"; do
+    # Bajar prioridad de indexadores y otros procesos no críticos conocidos
+    for proc in "${LSO_CANDIDATE_PROCESES[@]}"; do
         local pids
         pids=$(pgrep -f "$proc" 2>/dev/null || true)
         if [[ -n "$pids" ]]; then

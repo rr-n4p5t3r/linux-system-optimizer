@@ -16,7 +16,7 @@ optimize_manjaro() {
         if [[ -f "$makepkg_conf" ]]; then
             backup_file "$makepkg_conf" 2>/dev/null || true
 
-            sed -i "s/^#*MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/" "$makepkg_conf"
+            sed -i "s/^#*MAKEFLAGS=.*/MAKEFLAGS=\"-j$(nproc)\"/" "$makepkg_conf"
             sed -i 's/^COMPRESSXZ=.*/COMPRESSXZ=(xz -c -z - --threads=0)/' "$makepkg_conf"
 
             log_success "makepkg optimizado"

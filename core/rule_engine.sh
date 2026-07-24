@@ -222,8 +222,10 @@ execute_rule_action() {
             if [[ -f "${LSO_BASE_DIR}/modules/${target}_optimizer.sh" ]]; then
                 run_module "${target}_optimizer" 2>/dev/null || true
             elif [[ -f "${LSO_BASE_DIR}/distros/${target}.sh" ]]; then
+                # shellcheck source=/dev/null
                 source "${LSO_BASE_DIR}/distros/${target}.sh" 2>/dev/null || true
             elif [[ -f "${LSO_BASE_DIR}/desktops/${target}.sh" ]]; then
+                # shellcheck source=/dev/null
                 source "${LSO_BASE_DIR}/desktops/${target}.sh" 2>/dev/null || true
             fi
             ;;

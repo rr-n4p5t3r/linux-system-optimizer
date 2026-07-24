@@ -18,6 +18,7 @@ load_config() {
     local config_file="${LSO_CONFIG_DIR}/settings.conf"
 
     if [[ -f "$config_file" ]]; then
+        # shellcheck source=/dev/null
         source "$config_file" || log_warn "No se pudo cargar settings.conf completamente"
         log_info "Configuración cargada desde: $config_file"
     else
@@ -30,6 +31,7 @@ load_profile() {
     local profile_file="${LSO_CONFIG_DIR}/profiles/${profile_name}.conf"
 
     if [[ -f "$profile_file" ]]; then
+        # shellcheck source=/dev/null
         source "$profile_file" || log_warn "No se pudo cargar el perfil completamente"
         LSO_PROFILE="$profile_name"
         log_info "Perfil cargado: $profile_name"
@@ -59,6 +61,7 @@ run_module() {
 
     # Ejecutar módulo con manejo de errores
     set +e
+    # shellcheck source=/dev/null
     source "$module_path"
     local module_exit=$?
     set -e

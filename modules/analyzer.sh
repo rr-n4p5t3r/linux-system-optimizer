@@ -37,8 +37,11 @@ analyze_system() {
     ram_percent=$(awk "BEGIN {printf \"%.1f\", ($ram_used / $ram_total) * 100}")
 
     local ram_color="$C_GREEN"
-    [[ "$ram_percent" > "85" ]] && ram_color="$C_RED"
-    [[ "$ram_percent" > "70" ]] && [[ "$ram_percent" < "85" ]] && ram_color="$C_YELLOW"
+    if awk "BEGIN {exit !($ram_percent > 85)}"; then
+        ram_color="$C_RED"
+    elif awk "BEGIN {exit !($ram_percent > 70)}"; then
+        ram_color="$C_YELLOW"
+    fi
 
     echo -e "  ${C_DIM}Total:${C_RESET} ${C_CYAN}${ram_total}MB${C_RESET}"
     echo -e "  ${C_DIM}Usada:${C_RESET} ${ram_color}${ram_used}MB (${ram_percent}%)${C_RESET}"
@@ -60,11 +63,10 @@ analyze_system() {
         [[ -z "$line" ]] && continue
 
         # Extraer campos con awk (más robusto que read con variables fijas)
-        local filesystem size used avail percent mount
+        local filesystem size used percent mount
         filesystem=$(echo "$line" | awk '{print $1}')
         size=$(echo "$line" | awk '{print $2}')
         used=$(echo "$line" | awk '{print $3}')
-        avail=$(echo "$line" | awk '{print $4}')
         percent=$(echo "$line" | awk '{print $5}')
         mount=$(echo "$line" | awk '{print $6}')
 
@@ -148,7 +150,8 @@ analyze_system() {
         done
     fi
 
-    local report_file="${LSO_BASE_DIR}/reports/analysis-$(date +%Y%m%d-%H%M%S).txt"
+    local report_file
+    report_file="${LSO_BASE_DIR}/reports/analysis-$(date +%Y%m%d-%H%M%S).txt"
     mkdir -p "${LSO_BASE_DIR}/reports"
     echo -e "$report_data" > "$report_file"
     log_info "Reporte guardado en: $report_file"

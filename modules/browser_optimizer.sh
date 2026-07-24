@@ -34,7 +34,6 @@ optimize_firefox() {
         return
     fi
 
-    local prefs="${profile_dir}/prefs.js"
     local userjs="${profile_dir}/user.js"
 
     if [[ "$LSO_DRY_RUN" != "true" ]]; then

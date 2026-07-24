@@ -18,6 +18,7 @@ optimize_packages() {
         return 0
     fi
 
+    # shellcheck source=/dev/null
     source "$pm_script"
 
     print_step "Limpiando caché de $pm..."

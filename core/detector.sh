@@ -184,8 +184,6 @@ detect_disk_type() {
         if [[ "$root_dev" == /dev/mapper/* ]]; then
             # Intentar resolver el dispositivo real
             if command -v dmsetup &>/dev/null; then
-                local dm_name
-                dm_name=$(basename "$root_dev")
                 disk_name=$(dmsetup deps "$root_dev" 2>/dev/null | grep -oP '\(\K[^,)]+' | head -1 | sed 's/[0-9]*$//')
             fi
             # Fallback: usar lsblk
