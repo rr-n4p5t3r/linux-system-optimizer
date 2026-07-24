@@ -110,25 +110,25 @@ run_optimization() {
 
     case "$profile" in
         desktop)
-            modules_to_run=("analyzer" "memory_optimizer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         laptop)
-            modules_to_run=("analyzer" "memory_optimizer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "cache_cleaner" "package_optimizer" "swap")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "cache_cleaner" "package_optimizer" "swap")
             ;;
         gaming)
-            modules_to_run=("analyzer" "memory_optimizer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "disk_optimizer" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "disk_optimizer" "package_optimizer")
             ;;
         workstation)
-            modules_to_run=("analyzer" "memory_optimizer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "disk_optimizer" "network_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "disk_optimizer" "network_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         server)
-            modules_to_run=("analyzer" "memory_optimizer" "cpu_optimizer" "process_manager" "service_manager" "disk_optimizer" "network_optimizer" "journal_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "disk_optimizer" "network_optimizer" "journal_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         dev)
-            modules_to_run=("analyzer" "memory_optimizer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "dev_environment" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "dev_environment" "cache_cleaner" "package_optimizer")
             ;;
         *)
-            modules_to_run=("analyzer" "memory_optimizer" "cpu_optimizer" "process_manager" "service_manager" "cache_cleaner")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "cache_cleaner")
             ;;
     esac
 
@@ -137,6 +137,7 @@ run_optimization() {
 ${C_CYAN}Módulos a ejecutar:${C_RESET}"
         printf '  - %s
 ' "${modules_to_run[@]}"
+        echo -e "  - memory_optimizer ${C_DIM}(al final, después del motor de reglas)${C_RESET}"
         echo
         if ! confirm "¿Deseas continuar con la optimización?"; then
             log_info "Optimización cancelada por el usuario"
@@ -147,6 +148,13 @@ ${C_CYAN}Módulos a ejecutar:${C_RESET}"
     run_modules "${modules_to_run[@]}"
 
     run_rule_engine || log_warn "El motor de reglas tuvo problemas"
+
+    # memory_optimizer corre al final a propósito: todos los módulos y
+    # acciones del motor de reglas anteriores generan E/S de disco que
+    # repuebla la caché de página del kernel, así que liberar memoria antes
+    # de ellos no serviría de nada — el usuario vería el RAM alto de nuevo
+    # al terminar el resto de la optimización.
+    run_module "memory_optimizer" || log_warn "La optimización de memoria tuvo problemas"
 
     run_module "report" || log_warn "El reporte tuvo problemas"
 }

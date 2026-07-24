@@ -83,6 +83,22 @@ pero nunca se terminaron de construir o quedaron desconectadas del flujo real.
   `modules/firefox_optimizer.sh`, `distros/firefox.sh` o
   `desktops/firefox.sh` — ninguno existe. Ahora se mapean explícitamente a
   `modules/browser_optimizer.sh`, que ya contiene la lógica real.
+- **`core/engine.sh` — `memory_optimizer` dejaba de tener efecto perceptible
+  al final de `lso optimize`**: en todos los perfiles corría 2do en la lista
+  (justo después de `analyzer`), vaciando la caché de página del kernel muy
+  temprano. El resto de módulos que corrían después — y, desde que se
+  conectó el motor de reglas en esta misma versión, también sus acciones
+  (re-escaneo de cachés de navegador con `du -sb` para la variable
+  `browser_cache`, re-aplicación de scripts de distro/escritorio, y
+  `package_optimizer`/`startup_manager`, nuevos en 0.2.0) generan bastante
+  E/S de disco, que el kernel vuelve a reclamar como caché de página. El
+  resultado: al terminar la optimización completa, el uso de RAM volvía a
+  verse alto, aunque `memory_optimizer` sí había liberado memoria en su
+  momento — el orden de ejecución, no el módulo, era el problema. Ya
+  ocurría en 0.1.0 (mismo orden), pero pasaba desapercibido porque corrían
+  muchos menos módulos después. Corregido moviendo `memory_optimizer` para
+  que corra al final de `run_optimization()`, después del motor de reglas y
+  justo antes del reporte, en los 6 perfiles.
 - **Parseo de `free` sensible al locale**: en sistemas con locale no-inglés,
   la fila de swap de `free` no siempre se llama `Swap:` en la salida
   formateada por columnas, así que `awk '/^Swap:/'` no matcheaba y

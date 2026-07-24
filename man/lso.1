@@ -83,13 +83,17 @@ paquetes huérfanos, ejecuta también la actualización completa del sistema
 acción de mayor impacto de todo el framework.
 .SH PERFILES
 Cada perfil define una lista fija de módulos que se ejecutan en orden con
-.BR optimize ,
-seguidos siempre del motor de reglas y del reporte final.
+.BR optimize .
+Al final, siempre en este orden: motor de reglas, \fBmemory_optimizer\fR y
+por último el reporte. \fBmemory_optimizer\fR corre deliberadamente al
+final y no como parte de la lista del perfil: vaciar la caché de página del
+kernel antes de que el resto de módulos y del motor de reglas terminen de
+generar E/S de disco no serviría de nada, ya que esa E/S vuelve a poblar la
+caché — el sistema mostraría RAM alta otra vez justo al terminar.
 .TP
 .B desktop
-analyzer, memory_optimizer, cpu_optimizer, process_manager, service_manager,
-startup_manager, desktop_optimizer, browser_optimizer, cache_cleaner,
-package_optimizer.
+analyzer, cpu_optimizer, process_manager, service_manager, startup_manager,
+desktop_optimizer, browser_optimizer, cache_cleaner, package_optimizer.
 .TP
 .B laptop
 Igual que \fBdesktop\fR, más \fBswap\fR (ajuste de swappiness y
@@ -103,14 +107,14 @@ en su lugar.
 Igual que \fBdesktop\fR, más \fBdisk_optimizer\fR y \fBnetwork_optimizer\fR.
 .TP
 .B server
-analyzer, memory_optimizer, cpu_optimizer, process_manager, service_manager,
-disk_optimizer, network_optimizer, journal_optimizer, cache_cleaner,
-package_optimizer (sin módulos de escritorio ni navegador).
+analyzer, cpu_optimizer, process_manager, service_manager, disk_optimizer,
+network_optimizer, journal_optimizer, cache_cleaner, package_optimizer (sin
+módulos de escritorio ni navegador).
 .TP
 .B dev
-Estación de desarrollo: analyzer, memory_optimizer, cpu_optimizer,
-process_manager, service_manager, startup_manager, \fBdev_environment\fR,
-cache_cleaner, package_optimizer. El módulo \fBdev_environment\fR ajusta el
+Estación de desarrollo: analyzer, cpu_optimizer, process_manager,
+service_manager, startup_manager, \fBdev_environment\fR, cache_cleaner,
+package_optimizer. El módulo \fBdev_environment\fR ajusta el
 límite de \fIinotify\fR (\fBfs.inotify.max_user_watches\fR, suele agotarse
 con VS Code/webpack y similares), detecta motores de base de datos instalados
 (MySQL/MariaDB, PostgreSQL, MongoDB, Redis) y ofrece iniciarlos y habilitarlos

@@ -1,1 +1,8 @@
 Linux_System_Optimizer_LSO_Proyecto.md
+
+# Artefactos generados en tiempo de ejecución (no versionar)
+logs/*.log
+reports/*.html
+reports/*.txt
+!reports/.gitkeep
+!logs/.gitkeep
