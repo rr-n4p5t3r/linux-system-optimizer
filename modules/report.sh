@@ -2,6 +2,37 @@
 # =============================================================================
 # report.sh — Generador de reportes de LSO
 # =============================================================================
+# Reporte unificado: además de la foto estática del sistema (hardware,
+# distro, software detectado), incluye qué hizo LSO en esta corrida (módulos
+# ejecutados, reglas del motor de reglas activadas), el análisis completo de
+# modules/analyzer.sh, el diagnóstico de modules/security.sh, y un historial
+# comparando contra la corrida anterior. analyzer.sh y security.sh ya no
+# escriben su propio archivo — exponen LSO_ANALYSIS_REPORT/LSO_SECURITY_REPORT
+# (y LSO_ANALYSIS_{CPU,RAM,DISK}_PERCENT para el historial) como variables
+# globales, que este módulo consume.
+# =============================================================================
+
+# Delta entre el valor actual y el anterior de una métrica. "N/A" si falta
+# alguno de los dos (primera corrida, o el módulo que lo calcula no corrió).
+_lso_report_delta() {
+    local current="$1" previous="$2"
+
+    if [[ -z "$current" || -z "$previous" ]]; then
+        echo "N/A"
+        return 0
+    fi
+
+    local diff
+    diff=$(awk "BEGIN {printf \"%.1f\", $current - $previous}")
+
+    if awk "BEGIN {exit !($diff > 0)}"; then
+        echo "▲ +${diff}%"
+    elif awk "BEGIN {exit !($diff < 0)}"; then
+        echo "▼ ${diff}%"
+    else
+        echo "= sin cambio"
+    fi
+}
 
 generate_report() {
     print_header "GENERANDO REPORTE"
@@ -10,13 +41,71 @@ generate_report() {
     report_file="${LSO_BASE_DIR}/reports/lso-report-$(date +%Y%m%d-%H%M%S).html"
     mkdir -p "${LSO_BASE_DIR}/reports"
 
-    # Recopilar datos
-    local hostname
+    local hostname uptime_info kernel
     hostname=$(hostname)
-    local uptime_info
     uptime_info=$(uptime -p 2>/dev/null || uptime)
-    local kernel
     kernel=$(uname -r)
+
+    # --- Resumen de ejecución: qué módulos corrieron y cómo terminaron ---
+    local exec_html="" exec_txt=""
+    local i
+    for i in "${!LSO_RUN_MODULES[@]}"; do
+        local mod="${LSO_RUN_MODULES[$i]}"
+        local res="${LSO_RUN_RESULTS[$i]}"
+        if [[ "$res" == "OK" ]]; then
+            exec_html+="<div class=\"stat\"><span class=\"label\">${mod}</span><span class=\"value success\">✓ OK</span></div>"
+            exec_txt+="  [OK]   ${mod}"$'\n'
+        else
+            exec_html+="<div class=\"stat\"><span class=\"label\">${mod}</span><span class=\"value warning\">⚠ Advertencia</span></div>"
+            exec_txt+="  [WARN] ${mod}"$'\n'
+        fi
+    done
+    if [[ -z "$exec_html" ]]; then
+        exec_html="<p>Reporte generado de forma aislada, sin una corrida previa de <code>lso optimize</code>/<code>lso analyze</code> en este mismo proceso.</p>"
+        exec_txt="  (reporte generado de forma aislada, sin corrida previa en este proceso)"$'\n'
+    fi
+
+    # --- Reglas del motor de reglas activadas ---
+    local rules_html="" rules_txt=""
+    local rule
+    for rule in "${LSO_RUN_RULES_ACTIVATED[@]:-}"; do
+        [[ -z "$rule" ]] && continue
+        rules_html+="<li>${rule}</li>"
+        rules_txt+="  - ${rule}"$'\n'
+    done
+    if [[ -z "$rules_html" ]]; then
+        rules_html="<li>Ninguna regla se activó en esta corrida</li>"
+        rules_txt="  Ninguna regla se activó en esta corrida"$'\n'
+    fi
+
+    # --- Historial: comparar contra la corrida anterior ---
+    local history_file="${LSO_BASE_DIR}/reports/.lso-history.csv"
+    local prev_line="" prev_ts="" prev_ram="" prev_disk="" prev_cpu=""
+    [[ -f "$history_file" ]] && prev_line=$(tail -1 "$history_file" 2>/dev/null)
+    IFS=',' read -r prev_ts prev_ram prev_disk prev_cpu <<< "$prev_line"
+
+    mkdir -p "$(dirname "$history_file")"
+    echo "$(date '+%Y-%m-%d %H:%M:%S'),${LSO_ANALYSIS_RAM_PERCENT:-},${LSO_ANALYSIS_DISK_PERCENT:-},${LSO_ANALYSIS_CPU_PERCENT:-}" >> "$history_file"
+
+    local history_html history_txt
+    if [[ -z "${LSO_ANALYSIS_RAM_PERCENT:-}" ]]; then
+        history_html="<p>El módulo analyzer no corrió en esta sesión — sin datos para el historial.</p>"
+        history_txt="  El módulo analyzer no corrió en esta sesión — sin datos para el historial."$'\n'
+    elif [[ -z "$prev_line" ]]; then
+        history_html="<p>Primera corrida registrada — sin historial previo para comparar.</p>"
+        history_txt="  Primera corrida registrada — sin historial previo para comparar."$'\n'
+    else
+        local ram_delta disk_delta cpu_delta
+        ram_delta=$(_lso_report_delta "$LSO_ANALYSIS_RAM_PERCENT" "$prev_ram")
+        disk_delta=$(_lso_report_delta "$LSO_ANALYSIS_DISK_PERCENT" "$prev_disk")
+        cpu_delta=$(_lso_report_delta "$LSO_ANALYSIS_CPU_PERCENT" "$prev_cpu")
+
+        history_html="<div class=\"stat\"><span class=\"label\">RAM</span><span class=\"value\">${LSO_ANALYSIS_RAM_PERCENT}% (${ram_delta})</span></div><div class=\"stat\"><span class=\"label\">Disco (/)</span><span class=\"value\">${LSO_ANALYSIS_DISK_PERCENT}% (${disk_delta})</span></div><div class=\"stat\"><span class=\"label\">CPU</span><span class=\"value\">${LSO_ANALYSIS_CPU_PERCENT}% (${cpu_delta})</span></div><div class=\"stat\"><span class=\"label\">Corrida anterior</span><span class=\"value\">${prev_ts}</span></div>"
+        history_txt="  RAM:              ${LSO_ANALYSIS_RAM_PERCENT}% (${ram_delta})"$'\n'
+        history_txt+="  Disco (/):        ${LSO_ANALYSIS_DISK_PERCENT}% (${disk_delta})"$'\n'
+        history_txt+="  CPU:              ${LSO_ANALYSIS_CPU_PERCENT}% (${cpu_delta})"$'\n'
+        history_txt+="  Corrida anterior: ${prev_ts}"$'\n'
+    fi
 
     cat > "$report_file" << EOF
 <!DOCTYPE html>
@@ -38,7 +127,7 @@ generate_report() {
         .warning { color: #f4b400; }
         .error { color: #db4437; }
         .footer { text-align: center; color: #999; margin-top: 40px; font-size: 0.9em; }
-        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; white-space: pre-wrap; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #f8f9fa; font-weight: 600; }
@@ -55,6 +144,16 @@ generate_report() {
             <div class="stat"><span class="label">Uptime</span><span class="value">$uptime_info</span></div>
             <div class="stat"><span class="label">Kernel</span><span class="value">$kernel</span></div>
         </div>
+    </div>
+
+    <div class="card">
+        <h2>▶️ Resumen de la ejecución</h2>
+        <div class="grid">$exec_html</div>
+    </div>
+
+    <div class="card">
+        <h2>⚙️ Reglas activadas</h2>
+        <ul>$rules_html</ul>
     </div>
 
     <div class="card">
@@ -98,6 +197,21 @@ Load Average: $(cat /proc/loadavg 2>/dev/null || echo "N/A")</pre>
         </div>
     </div>
 
+    <div class="card">
+        <h2>🔍 Análisis del sistema</h2>
+        <pre>$(echo -e "${LSO_ANALYSIS_REPORT:-No disponible — el módulo analyzer no corrió en esta sesión.}")</pre>
+    </div>
+
+    <div class="card">
+        <h2>🔒 Seguridad</h2>
+        <pre>$(echo -e "${LSO_SECURITY_REPORT:-No disponible — el módulo security no corrió en esta sesión.}")</pre>
+    </div>
+
+    <div class="card">
+        <h2>📈 Historial (vs. corrida anterior)</h2>
+        <div class="grid">$history_html</div>
+    </div>
+
     <div class="footer">
         <p>Generado por Linux System Optimizer v$(cat "${LSO_BASE_DIR}/VERSION" 2>/dev/null | grep -oP '\d+\.\d+\.\d+' || echo "0.1.0")</p>
         <p>Reporte guardado en: $report_file</p>
@@ -120,6 +234,10 @@ Hostname:     $hostname
 Uptime:       $uptime_info
 Kernel:       $kernel
 
+--- RESUMEN DE LA EJECUCIÓN ---
+${exec_txt}
+--- REGLAS ACTIVADAS ---
+${rules_txt}
 --- HARDWARE ---
 CPU:          ${LSO_CPU_MODEL:-N/A}
 Cores:        ${LSO_CPU_CORES:-N/A}
@@ -147,6 +265,14 @@ Lenguajes:    ${LSO_LANGUAGES[*]:-Ninguno}
 Contenedores: ${LSO_CONTAINERS[*]:-Ninguno}
 Virtualización: ${LSO_VIRTUALIZATION:-N/A}
 
+--- ANÁLISIS DEL SISTEMA ---
+$(echo -e "${LSO_ANALYSIS_REPORT:-No disponible — el módulo analyzer no corrió en esta sesión.}")
+
+--- SEGURIDAD ---
+$(echo -e "${LSO_SECURITY_REPORT:-No disponible — el módulo security no corrió en esta sesión.}")
+
+--- HISTORIAL (vs. corrida anterior) ---
+${history_txt}
 ================================================================================
 EOF
 

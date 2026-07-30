@@ -4,5 +4,6 @@ Linux_System_Optimizer_LSO_Proyecto.md
 logs/*.log
 reports/*.html
 reports/*.txt
+reports/.lso-history.csv
 !reports/.gitkeep
 !logs/.gitkeep

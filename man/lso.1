@@ -1,4 +1,4 @@
-.TH LSO 1 "29 de julio de 2026" "LSO 0.3.0-alpha" "Linux System Optimizer"
+.TH LSO 1 "29 de julio de 2026" "LSO 0.3.1-alpha" "Linux System Optimizer"
 .SH NOMBRE
 lso \- framework modular para analizar, optimizar y mantener distribuciones GNU/Linux
 .SH SINOPSIS
@@ -21,12 +21,13 @@ cuando está habilitado.
 .TP
 .BR analyze ", " \-a
 Analiza el sistema completo (CPU, memoria, disco, procesos, servicios, cachés,
-temperaturas) y guarda un reporte en \fIreports/\fR.
+temperaturas) y genera el reporte unificado en \fIreports/\fR (ver
+\fBEL REPORTE\fR más abajo).
 .TP
 .BR optimize ", " \-o " [\fIperfil\fR]"
 Ejecuta los módulos del perfil indicado (o \fBdesktop\fR por defecto), seguido
-del motor de reglas y de un reporte final. Pide confirmación única antes de
-aplicar cambios, salvo con \fB\-\-force\fR.
+del motor de reglas, \fBmemory_optimizer\fR, y el reporte final unificado.
+Pide confirmación única antes de aplicar cambios, salvo con \fB\-\-force\fR.
 .TP
 .BR module ", " \-m " \fInombre\fR"
 Ejecuta un único módulo de \fImodules/\fR de forma aislada.
@@ -41,7 +42,11 @@ Restaura configuraciones desde los backups guardados en \fIbackups/\fR.
 Permite restaurar uno, todos, o eliminarlos.
 .TP
 .B report
-Genera un reporte del último análisis (equivalente a \fBmodule report\fR).
+Genera el reporte unificado con los datos disponibles en el proceso actual
+(equivalente a \fBmodule report\fR). Si se corre de forma aislada, sin un
+\fBoptimize\fR/\fBanalyze\fR previo en el mismo proceso, las secciones que
+dependen de esos módulos (análisis, seguridad, ejecución) se muestran como no
+disponibles en vez de fallar.
 .TP
 .B plugins
 Lista los plugins disponibles en \fIplugins/\fR y su estado de carga.
@@ -173,6 +178,42 @@ browser_cache > 1GB \-> clean_browser_cache
 .RE
 .PP
 Pruébalo de forma aislada con \fBsudo lso rules \-\-dry\-run\fR.
+.SH EL REPORTE
+Cada corrida de \fBoptimize\fR o \fBanalyze\fR termina generando un único
+reporte unificado en \fIreports/\fR (HTML y texto plano), con estas
+secciones:
+.TP
+.B Resumen de la ejecución
+Qué módulos corrieron en esta corrida y si terminaron bien o con
+advertencia. Incluye también los módulos que el motor de reglas haya vuelto
+a disparar (por ejemplo, una regla de \fBbrowser.rules\fR puede volver a
+correr \fBbrowser_optimizer\fR aunque ya haya corrido como parte del
+perfil).
+.TP
+.B Reglas activadas
+Qué condiciones de \fBconfig/rules/*.rules\fR se cumplieron y qué acción
+dispararon.
+.TP
+.B Análisis del sistema
+El análisis completo de \fBanalyzer\fR (CPU, memoria, disco, top procesos,
+servicios, cachés, temperaturas) — antes era un archivo aparte
+(\fIanalysis-*.txt\fR), ahora vive dentro del mismo reporte.
+.TP
+.B Seguridad
+El diagnóstico de \fBsecurity\fR (firewall, actualizaciones de seguridad
+pendientes, permisos de archivos sensibles, usuarios con shell de login).
+\fBsecurity\fR se agregó a los módulos automáticos de los 8 perfiles para
+que esta sección tenga datos en cualquier corrida normal.
+.TP
+.B Historial
+Compara RAM/disco/CPU de esta corrida contra la anterior (guardado en
+\fIreports/.lso\-history.csv\fR), con la flecha de cambio
+(\fB▲\fR/\fB▼\fR/\fB=\fR). En la primera corrida no hay nada que comparar
+todavía.
+.PP
+Si generas el reporte de forma aislada (\fBlso module report\fR sin un
+\fBoptimize\fR/\fBanalyze\fR previo en el mismo proceso), las secciones que
+dependen de esos módulos se muestran como no disponibles en vez de fallar.
 .SH LIMITACIONES CONOCIDAS
 .TP
 .B FreeBSD (soporte experimental)
@@ -211,7 +252,9 @@ Logs con rotación automática (fallback a \fI/tmp\fR si no es escribible).
 Copias de seguridad de archivos modificados, con marca de tiempo.
 .TP
 .I reports/
-Reportes de análisis en texto plano.
+Reportes unificados en HTML y texto plano (\fBlso\-report\-*.html/.txt\fR).
+\fI.lso\-history.csv\fR (oculto) guarda RAM/disco/CPU de cada corrida para
+la sección de historial — no se versiona (ver \fB.gitignore\fR).
 .TP
 .I plugins/
 Plugins de terceros, cargados automáticamente al iniciar.
