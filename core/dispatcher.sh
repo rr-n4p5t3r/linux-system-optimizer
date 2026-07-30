@@ -20,7 +20,8 @@ USO:
 COMANDOS:
     analyze, -a              Analizar el sistema completo
     optimize, -o [perfil]    Ejecutar optimización (perfiles: desktop, laptop,
-                             gaming, workstation, server, dev)
+                             gaming, workstation, server, dev, docker,
+                             database)
     module, -m <nombre>      Ejecutar módulo específico
     detect, -d               Mostrar información de detección del sistema
     restore, -r              Restaurar configuraciones desde backups

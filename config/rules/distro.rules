@@ -4,7 +4,7 @@
 # Linux System Optimizer (LSO)
 # Autor: Ricardo Rosero <rrosero2000@gmail.com>
 # GitHub: https://github.com/rr-n4p5t3r
-# Licencia: MIT
+# Licencia: GPLv3
 # =============================================================================
 
 distro == debian -> optimize_debian
@@ -23,3 +23,9 @@ distro == endeavouros -> optimize_endeavouros
 distro == opensuse -> optimize_opensuse
 distro == rocky -> optimize_rocky
 distro == almalinux -> optimize_almalinux
+distro == kali -> optimize_kali
+distro == gentoo -> optimize_gentoo
+distro == void -> optimize_void
+distro == slackware -> optimize_slackware
+distro == rhel -> optimize_rhel
+distro == amzn -> optimize_amzn

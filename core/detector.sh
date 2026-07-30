@@ -41,6 +41,16 @@ detect_distro() {
     LSO_DISTRO_ID="unknown"
     LSO_DISTRO_VERSION="unknown"
 
+    # FreeBSD no tiene /etc/os-release en la instalación base — es otro SO,
+    # no una distro de Linux, así que se detecta aparte vía uname.
+    if [[ "$(uname -s 2>/dev/null)" == "FreeBSD" ]]; then
+        LSO_DISTRO="FreeBSD"
+        LSO_DISTRO_ID="freebsd"
+        LSO_DISTRO_VERSION=$(uname -r 2>/dev/null || echo "unknown")
+        _lso_log "Distribución detectada: $LSO_DISTRO ($LSO_DISTRO_ID $LSO_DISTRO_VERSION) [soporte experimental]"
+        return 0
+    fi
+
     if [[ -f /etc/os-release ]]; then
         source /etc/os-release
         LSO_DISTRO="${NAME:-Unknown}"
@@ -69,6 +79,12 @@ detect_distro() {
         opensuse*|suse*) LSO_DISTRO_ID="opensuse" ;;
         rocky)         LSO_DISTRO_ID="rocky" ;;
         almalinux)     LSO_DISTRO_ID="almalinux" ;;
+        kali)          LSO_DISTRO_ID="kali" ;;
+        gentoo)        LSO_DISTRO_ID="gentoo" ;;
+        void)          LSO_DISTRO_ID="void" ;;
+        slackware)     LSO_DISTRO_ID="slackware" ;;
+        rhel)          LSO_DISTRO_ID="rhel" ;;
+        amzn)          LSO_DISTRO_ID="amzn" ;;
     esac
 
     _lso_log "Distribución detectada: $LSO_DISTRO ($LSO_DISTRO_ID $LSO_DISTRO_VERSION)"
@@ -110,6 +126,14 @@ detect_package_manager() {
         LSO_PACKAGE_MANAGER="pacman"
     elif command -v zypper &>/dev/null; then
         LSO_PACKAGE_MANAGER="zypper"
+    elif command -v emerge &>/dev/null; then
+        LSO_PACKAGE_MANAGER="portage"
+    elif command -v xbps-install &>/dev/null; then
+        LSO_PACKAGE_MANAGER="xbps"
+    elif command -v slackpkg &>/dev/null; then
+        LSO_PACKAGE_MANAGER="slackpkg"
+    elif command -v pkg &>/dev/null; then
+        LSO_PACKAGE_MANAGER="pkg"
     fi
 
     _lso_log "Gestor de paquetes: $LSO_PACKAGE_MANAGER"
@@ -128,6 +152,10 @@ detect_cpu() {
         local siblings
         siblings=$(grep 'siblings' /proc/cpuinfo 2>/dev/null | head -1 | awk '{print $3}')
         [[ -n "$siblings" ]] && LSO_CPU_THREADS=$siblings
+    elif command -v sysctl &>/dev/null && [[ "$(uname -s 2>/dev/null)" == "FreeBSD" ]]; then
+        LSO_CPU_MODEL=$(sysctl -n hw.model 2>/dev/null || echo "Unknown")
+        LSO_CPU_CORES=$(sysctl -n hw.ncpu 2>/dev/null || echo "1")
+        LSO_CPU_THREADS=$LSO_CPU_CORES
     fi
 
     _lso_log "CPU: $LSO_CPU_MODEL | Cores: $LSO_CPU_CORES | Threads: $LSO_CPU_THREADS"
@@ -143,6 +171,9 @@ detect_ram() {
     elif [[ -f /proc/meminfo ]]; then
         LSO_RAM_TOTAL=$(awk '/MemTotal/{print $2 * 1024}' /proc/meminfo 2>/dev/null || echo "0")
         LSO_RAM_AVAILABLE=$(awk '/MemAvailable/{print $2 * 1024}' /proc/meminfo 2>/dev/null || echo "0")
+    elif command -v sysctl &>/dev/null && [[ "$(uname -s 2>/dev/null)" == "FreeBSD" ]]; then
+        LSO_RAM_TOTAL=$(sysctl -n hw.physmem 2>/dev/null || echo "0")
+        LSO_RAM_AVAILABLE="$LSO_RAM_TOTAL"
     fi
 
     _lso_log "RAM Total: $(human_size "$LSO_RAM_TOTAL") | Disponible: $(human_size "$LSO_RAM_AVAILABLE")"
