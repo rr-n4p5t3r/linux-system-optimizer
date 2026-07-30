@@ -23,7 +23,7 @@ optimize_memory() {
     # --- Optimizar swappiness ---
     if [[ "${LSO_SWAP_OPTIMIZE:-true}" == "true" ]]; then
         print_step "Ajustando swappiness..."
-        local current_swappiness
+        local current_swappiness=""
         current_swappiness=$(cat /proc/sys/vm/swappiness 2>/dev/null || echo "60")
         local target_swappiness="${LSO_SWAPPINESS:-10}"
 

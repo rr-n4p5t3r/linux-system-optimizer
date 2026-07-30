@@ -18,7 +18,7 @@ optimize_gpu() {
     fi
 
     print_step "GPU detectada..."
-    local gpu_line
+    local gpu_line=""
     gpu_line=$(lspci -k 2>/dev/null | grep -iE 'vga|3d|display' | head -1)
 
     if [[ -z "$gpu_line" ]]; then
@@ -28,7 +28,7 @@ optimize_gpu() {
 
     echo -e "  ${C_CYAN}${gpu_line#*: }${C_RESET}"
 
-    local driver
+    local driver=""
     driver=$(lspci -k 2>/dev/null | grep -A3 -iE 'vga|3d|display' | grep "Kernel driver in use" | head -1 | cut -d: -f2 | sed 's/^ *//')
     echo -e "  ${C_DIM}Driver en uso:${C_RESET} ${C_CYAN}${driver:-desconocido}${C_RESET}"
 

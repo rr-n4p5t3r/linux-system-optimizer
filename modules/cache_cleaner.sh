@@ -11,7 +11,7 @@ clean_caches() {
     # --- Caché de paquetes APT ---
     if command -v apt &>/dev/null; then
         print_step "Limpiando caché de APT..."
-        local apt_before
+        local apt_before=""
         apt_before=$(du -sb /var/cache/apt/archives 2>/dev/null | cut -f1 || echo "0")
 
         if [[ "$LSO_DRY_RUN" != "true" ]]; then
@@ -23,7 +23,7 @@ clean_caches() {
             print_info "[DRY-RUN] Se limpiaría caché de APT"
         fi
 
-        local apt_after
+        local apt_after=""
         apt_after=$(du -sb /var/cache/apt/archives 2>/dev/null | cut -f1 || echo "0")
         local apt_freed=$((apt_before - apt_after))
         total_freed=$((total_freed + apt_freed))
@@ -80,7 +80,7 @@ clean_caches() {
 
     for cache_dir in "${browser_cache_dirs[@]}"; do
         if [[ -d "$cache_dir" ]]; then
-            local bsize
+            local bsize=""
             bsize=$(du -sb "$cache_dir" 2>/dev/null | cut -f1 || echo "0")
 
             if [[ "$LSO_DRY_RUN" != "true" ]]; then
@@ -88,7 +88,7 @@ clean_caches() {
                 find "$cache_dir" -type f -atime +30 -delete 2>/dev/null || true
             fi
 
-            local bsize_after
+            local bsize_after=""
             bsize_after=$(du -sb "$cache_dir" 2>/dev/null | cut -f1 || echo "0")
             local bfreed=$((bsize - bsize_after))
             total_freed=$((total_freed + bfreed))
@@ -100,14 +100,14 @@ clean_caches() {
     print_step "Limpiando caché de miniaturas..."
     local thumb_dir="$HOME/.cache/thumbnails"
     if [[ -d "$thumb_dir" ]]; then
-        local thumb_before
+        local thumb_before=""
         thumb_before=$(du -sb "$thumb_dir" 2>/dev/null | cut -f1 || echo "0")
 
         if [[ "$LSO_DRY_RUN" != "true" ]]; then
             find "$thumb_dir" -type f -atime +60 -delete 2>/dev/null || true
         fi
 
-        local thumb_after
+        local thumb_after=""
         thumb_after=$(du -sb "$thumb_dir" 2>/dev/null | cut -f1 || echo "0")
         local thumb_freed=$((thumb_before - thumb_after))
         total_freed=$((total_freed + thumb_freed))

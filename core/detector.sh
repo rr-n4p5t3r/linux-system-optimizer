@@ -149,7 +149,7 @@ detect_cpu() {
         LSO_CPU_CORES=$(nproc --all 2>/dev/null || grep -c '^processor' /proc/cpuinfo 2>/dev/null || echo "1")
         LSO_CPU_THREADS=$LSO_CPU_CORES
 
-        local siblings
+        local siblings=""
         siblings=$(grep 'siblings' /proc/cpuinfo 2>/dev/null | head -1 | awk '{print $3}')
         [[ -n "$siblings" ]] && LSO_CPU_THREADS=$siblings
     elif command -v sysctl &>/dev/null && [[ "$(uname -s 2>/dev/null)" == "FreeBSD" ]]; then
@@ -195,7 +195,7 @@ detect_disk_type() {
     LSO_DISK_TYPE="Unknown"
 
     # Método 1: Usar findmnt
-    local root_dev
+    local root_dev=""
     root_dev=$(findmnt -n -o SOURCE / 2>/dev/null | sed 's/\[.*\]//' || echo "")
 
     # Método 2: Usar df como fallback
@@ -209,7 +209,7 @@ detect_disk_type() {
     fi
 
     if [[ -n "$root_dev" ]]; then
-        local disk_name
+        local disk_name=""
 
         # Si es un dispositivo mapper (LVM), obtener el dispositivo subyacente
         if [[ "$root_dev" == /dev/mapper/* ]]; then
@@ -235,7 +235,7 @@ detect_disk_type() {
             if [[ "$disk_name" == nvme* ]]; then
                 LSO_DISK_TYPE="NVMe"
             elif [[ -f "/sys/block/${disk_name}/queue/rotational" ]]; then
-                local rotational
+                local rotational=""
                 rotational=$(cat "/sys/block/${disk_name}/queue/rotational" 2>/dev/null || echo "1")
                 if [[ "$rotational" == "0" ]]; then
                     LSO_DISK_TYPE="SSD"
@@ -245,7 +245,7 @@ detect_disk_type() {
             elif [[ "$disk_name" == sd* ]] || [[ "$disk_name" == hd* ]]; then
                 # Intentar con hdparm o smartctl
                 if command -v hdparm &>/dev/null; then
-                    local hdparm_out
+                    local hdparm_out=""
                     hdparm_out=$(hdparm -I "/dev/${disk_name}" 2>/dev/null | grep -i "solid state" || echo "")
                     if [[ -n "$hdparm_out" ]]; then
                         LSO_DISK_TYPE="SSD"
@@ -329,11 +329,11 @@ detect_virtualization() {
     elif [[ -f /proc/1/cgroup ]] && grep -q "docker" /proc/1/cgroup 2>/dev/null; then
         LSO_VIRTUALIZATION="Docker"
     elif command -v systemd-detect-virt &>/dev/null; then
-        local detected_virt
+        local detected_virt=""
         detected_virt=$(systemd-detect-virt 2>/dev/null)
         LSO_VIRTUALIZATION="${detected_virt:-none}"
     elif [[ -f /sys/class/dmi/id/product_name ]]; then
-        local product
+        local product=""
         product=$(cat /sys/class/dmi/id/product_name 2>/dev/null || echo "")
         if [[ "$product" == *"VMware"* ]]; then
             LSO_VIRTUALIZATION="vmware"

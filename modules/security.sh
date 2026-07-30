@@ -10,12 +10,12 @@ check_security() {
     print_step "Verificando firewall..."
     LSO_SECURITY_REPORT+="[FIREWALL]\n"
     if command -v ufw &>/dev/null; then
-        local ufw_status
+        local ufw_status=""
         ufw_status=$(ufw status 2>/dev/null | head -1)
         echo -e "  ${C_DIM}UFW:${C_RESET} ${C_CYAN}${ufw_status}${C_RESET}"
         LSO_SECURITY_REPORT+="  UFW: ${ufw_status}\n"
     elif command -v firewall-cmd &>/dev/null; then
-        local fw_status
+        local fw_status=""
         fw_status=$(firewall-cmd --state 2>/dev/null || echo "not running")
         echo -e "  ${C_DIM}Firewalld:${C_RESET} ${C_CYAN}${fw_status}${C_RESET}"
         LSO_SECURITY_REPORT+="  Firewalld: ${fw_status}\n"
@@ -56,9 +56,9 @@ check_security() {
     local sensitive_files=("/etc/shadow" "/etc/passwd" "/etc/group")
     for file in "${sensitive_files[@]}"; do
         if [[ -f "$file" ]]; then
-            local perms
+            local perms=""
             perms=$(stat -c "%a" "$file" 2>/dev/null)
-            local owner
+            local owner=""
             owner=$(stat -c "%U:%G" "$file" 2>/dev/null)
             echo -e "  ${C_DIM}$(basename "$file"):${C_RESET} ${C_CYAN}${perms} ${owner}${C_RESET}"
             LSO_SECURITY_REPORT+="  $(basename "$file"): ${perms} ${owner}\n"
@@ -69,7 +69,7 @@ check_security() {
     # --- Verificar usuarios con shell ---
     print_step "Usuarios con shell de login..."
     LSO_SECURITY_REPORT+="[USUARIOS CON SHELL DE LOGIN]\n"
-    local login_users
+    local login_users=""
     login_users=$(grep -E "/bin/bash|/bin/zsh|/bin/sh" /etc/passwd 2>/dev/null | awk -F: '{print $1}')
     if [[ -n "$login_users" ]]; then
         echo "$login_users" | while read -r line; do

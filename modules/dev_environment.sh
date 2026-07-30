@@ -45,7 +45,7 @@ optimize_dev_environment() {
     # --- Motores de base de datos ---
     print_step "Verificando motores de base de datos..."
     local found_db=false
-    local svc
+    local svc=""
     for svc in "${LSO_DEV_DATABASE_SERVICES[@]}"; do
         service_exists "$svc" || continue
         found_db=true
@@ -79,7 +79,7 @@ optimize_dev_environment() {
         tool_found=true
     fi
 
-    local tool
+    local tool=""
     for tool in conda pyenv rbenv rvm docker podman; do
         if command -v "$tool" &>/dev/null; then
             echo -e "  ${C_CYAN}•${C_RESET} $tool"

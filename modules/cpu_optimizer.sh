@@ -10,7 +10,7 @@ optimize_cpu() {
     print_step "Analizando governors de CPU..."
 
     if [[ -d /sys/devices/system/cpu/cpu0/cpufreq ]]; then
-        local current_governor
+        local current_governor=""
         current_governor=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null || echo "unknown")
         echo -e "  ${C_DIM}Governor actual:${C_RESET} ${C_CYAN}${current_governor}${C_RESET}"
 
@@ -52,9 +52,9 @@ optimize_cpu() {
     print_step "Verificando scheduler de I/O..."
     for disk in /sys/block/sd* /sys/block/nvme* /sys/block/hd*; do
         [[ -d "$disk" ]] || continue
-        local disk_name
+        local disk_name=""
         disk_name=$(basename "$disk")
-        local current_scheduler
+        local current_scheduler=""
         current_scheduler=$(cat "${disk}/queue/scheduler" 2>/dev/null | grep -oP '\[\K[^\]]+' || echo "unknown")
 
         echo -e "  ${C_DIM}${disk_name}:${C_RESET} ${C_CYAN}${current_scheduler}${C_RESET}"

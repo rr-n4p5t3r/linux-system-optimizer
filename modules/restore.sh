@@ -20,11 +20,11 @@ restore_system() {
 
     for backup in "$backup_dir"/*.bak; do
         [[ -f "$backup" ]] || continue
-        local filename
+        local filename=""
         filename=$(basename "$backup")
-        local size
+        local size=""
         size=$(du -sh "$backup" 2>/dev/null | cut -f1)
-        local date_str
+        local date_str=""
         date_str=$(date -d "@${filename##*.}" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "Fecha desconocida")
 
         echo -e "  ${C_CYAN}${i}.${C_RESET} ${filename} (${size}) — ${date_str}"

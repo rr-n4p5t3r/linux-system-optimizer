@@ -13,7 +13,7 @@ optimize_database() {
     # --- Motores de base de datos instalados ---
     print_step "Verificando motores de base de datos..."
     local found_db=false
-    local svc
+    local svc=""
     for svc in "${LSO_DB_SERVICES[@]}"; do
         service_exists "$svc" || continue
         found_db=true
@@ -58,7 +58,7 @@ optimize_database() {
         [[ -n "$shmmax" ]] && params+=("kernel.shmmax=${shmmax}")
         [[ -n "$shmall" ]] && params+=("kernel.shmall=${shmall}")
 
-        local param
+        local param=""
         for param in "${params[@]}"; do
             local key="${param%%=*}"
             sysctl -w "$param" &>/dev/null

@@ -46,7 +46,7 @@ optimize_startup() {
     local disabled_count=0
 
     for entry in "${entries[@]}"; do
-        local app_id
+        local app_id=""
         app_id=$(basename "$entry" .desktop)
 
         grep -qE "^Hidden=true|^X-GNOME-Autostart-enabled=false" "$entry" 2>/dev/null && continue
