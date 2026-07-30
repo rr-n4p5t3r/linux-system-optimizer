@@ -2,6 +2,82 @@
 
 Todos los cambios notables de este proyecto serán documentados aquí.
 
+## [0.3.0-alpha] - 2026-07-29
+
+Amplía distros, gestores de paquetes, módulos y perfiles siguiendo el roadmap
+publicado por el autor. Compara ese roadmap contra el estado real del
+proyecto: varios ítems ya estaban resueltos (reportes, logs, perfil `dev`,
+infraestructura de plugins) y se descartaron de esta ronda; el resto —lo que
+sí era trabajo nuevo— se implementó acá.
+
+### Añadido — Distros y gestores de paquetes
+- **7 distros nuevas**: Kali, Gentoo, Void Linux, Slackware, RHEL, Amazon
+  Linux (todas Linux) y **FreeBSD** (soporte **experimental**, ver
+  limitación abajo). Total: 23 distros (openSUSE ya estaba soportado desde
+  antes, no se contó como nueva).
+- **4 gestores de paquetes nuevos**: `package_managers/portage.sh` (Gentoo),
+  `xbps.sh` (Void), `slackpkg.sh` (Slackware, sin equivalente real de
+  autoremove — Slackware no rastrea dependencias, se documenta con
+  `log_warn`), `pkg.sh` (FreeBSD).
+- `core/detector.sh`: detección de los 6 IDs de distro Linux nuevos, de los
+  4 gestores de paquetes nuevos, y **detección real de FreeBSD** (que no
+  tiene `/etc/os-release` en la instalación base, se detecta vía
+  `uname -s`), con fallback a `sysctl` para CPU/RAM cuando `/proc` no existe.
+
+### Añadido — Módulos nuevos
+- **`modules/bluetooth_optimizer.sh`**: reporta dispositivos emparejados: si
+  el servicio está activo pero no hay ninguno, ofrece deshabilitarlo.
+- **`modules/power_optimizer.sh`**: si TLP está instalado, asegura que esté
+  activo; si powertop está instalado, ofrece `powertop --auto-tune`. No
+  instala ninguno de los dos si no están presentes — igual que el resto de
+  LSO, solo ajusta software que el usuario ya tiene.
+- **`modules/gpu_optimizer.sh`** — **solo diagnóstico, deliberadamente**:
+  reporta vendor/modelo/driver en uso y sugiere en texto el comando a correr
+  manualmente si hay un driver propietario disponible. **Nunca instala ni
+  cambia drivers de GPU automáticamente** — automatizar eso puede romper la
+  sesión gráfica, y ese riesgo no vale la pena ni con confirmación. Auditado
+  manualmente: no contiene ningún comando de instalación/cambio de driver.
+- **`modules/virtualization_optimizer.sh`** (KVM): reporta `/dev/kvm` y
+  estado de `libvirtd`; ofrece iniciarlo y agregar al usuario invocador a
+  los grupos `libvirt`/`kvm`; ajusta `vm.nr_hugepages` con el mismo patrón
+  de backup que `memory_optimizer.sh`.
+- Los 4 se agregaron a los perfiles donde tienen sentido: `bluetooth_optimizer`
+  y `gpu_optimizer` en `desktop`/`laptop`/`gaming`/`workstation`;
+  `power_optimizer` en `laptop`; `virtualization_optimizer` en `workstation`
+  y `dev`.
+
+### Añadido — Perfiles Docker y Base de Datos
+- **`modules/docker_optimizer.sh`** + **`config/profiles/docker.conf`**:
+  reporta uso de disco (`docker/podman system df`) y ofrece limpiar
+  contenedores/redes/imágenes *dangling* no usados. La limpieza de
+  **volúmenes** requiere una **segunda confirmación separada y explícita**,
+  dejando claro que implica posible pérdida de datos — nunca se limpia junto
+  con lo demás por defecto.
+- **`modules/database_optimizer.sh`** + **`config/profiles/database.conf`**:
+  detecta y ofrece iniciar motores de BD instalados (MySQL/MariaDB,
+  PostgreSQL, MongoDB, Redis — mismo patrón que ya usa `dev_environment.sh`)
+  y ajusta parámetros de kernel específicos para cargas de base de datos
+  (`vm.swappiness` muy bajo, `vm.dirty_ratio`/`vm.dirty_background_ratio`,
+  opcionalmente `kernel.shmmax`/`shmall`).
+
+### Limitaciones conocidas (documentadas a propósito, no son bugs)
+- **FreeBSD es soporte experimental.** No es una distro de Linux — es otro
+  SO (sin systemd, sin `/proc`/`/sys`). Se detecta correctamente y se
+  soporta su gestor de paquetes (`pkg`), pero la mayoría de los módulos del
+  core (`service_manager`, `swap`, `zram`, `journal_optimizer`,
+  `memory_optimizer`, `security`) son Linux-específicos y no se portaron en
+  esta ronda — no se recomienda correr perfiles completos en FreeBSD todavía.
+- **`gpu_optimizer` es solo diagnóstico**, nunca instala ni cambia drivers
+  de GPU. Ver detalle arriba.
+
+### Corregido
+- **`.gitignore` / cabeceras de licencia**: el reemplazo masivo MIT→GPLv3 de
+  la versión anterior solo cubrió archivos `.sh`; quedaron 14 archivos
+  `.conf`/`.rules` con `# Licencia: MIT` sin actualizar
+  (`config/settings.conf`, `config/whitelist.conf`, `config/blacklist.conf`,
+  y los `.conf`/`.rules` de `config/profiles/` y `config/rules/`).
+  Corregido.
+
 ## [0.2.0-alpha] - 2026-07-24
 
 Implementa piezas que estaban documentadas en el diseño original del proyecto

@@ -1,4 +1,4 @@
-.TH LSO 1 "24 de julio de 2026" "LSO 0.2.0-alpha" "Linux System Optimizer"
+.TH LSO 1 "29 de julio de 2026" "LSO 0.3.0-alpha" "Linux System Optimizer"
 .SH NOMBRE
 lso \- framework modular para analizar, optimizar y mantener distribuciones GNU/Linux
 .SH SINOPSIS
@@ -123,6 +123,25 @@ gestores de versiones presentes (venv, conda, pyenv, nvm, rbenv, rvm, docker,
 podman). Configurable vía \fIconfig/profiles/dev.conf\fR
 (\fBLSO_DEV_START_DATABASES\fR, \fBLSO_DEV_INCREASE_INOTIFY\fR,
 \fBLSO_DEV_INOTIFY_WATCHES\fR).
+.TP
+.B docker
+Host de contenedores: analyzer, cpu_optimizer, process_manager,
+service_manager, \fBdocker_optimizer\fR, cache_cleaner, package_optimizer.
+\fBdocker_optimizer\fR reporta uso de disco (\fBdocker/podman system df\fR) y
+ofrece limpiar contenedores/redes/imágenes \fIdangling\fR no usados. La
+limpieza de volúmenes requiere una segunda confirmación separada y explícita,
+porque puede implicar pérdida de datos.
+.TP
+.B database
+Servidor dedicado de base de datos: analyzer, cpu_optimizer, process_manager,
+service_manager, disk_optimizer, \fBdatabase_optimizer\fR, cache_cleaner,
+package_optimizer (sin módulos de escritorio/navegador/inicio).
+\fBdatabase_optimizer\fR detecta y ofrece iniciar motores de BD instalados
+(MySQL/MariaDB, PostgreSQL, MongoDB, Redis) y ajusta parámetros de kernel
+para cargas de base de datos: \fBvm.swappiness\fR muy bajo,
+\fBvm.dirty_ratio\fR/\fBvm.dirty_background_ratio\fR, y opcionalmente
+\fBkernel.shmmax\fR/\fBshmall\fR. Configurable vía
+\fIconfig/profiles/database.conf\fR.
 .SH MOTOR DE REGLAS
 Los archivos en
 .I config/rules/*.rules
@@ -154,13 +173,30 @@ browser_cache > 1GB \-> clean_browser_cache
 .RE
 .PP
 Pruébalo de forma aislada con \fBsudo lso rules \-\-dry\-run\fR.
+.SH LIMITACIONES CONOCIDAS
+.TP
+.B FreeBSD (soporte experimental)
+FreeBSD no es una distribución de Linux — es otro sistema operativo (kernel
+BSD, sin systemd, sin \fI/proc\fR ni \fI/sys\fR). LSO detecta FreeBSD y
+soporta su gestor de paquetes (\fBpkg\fR), pero la mayoría de los módulos del
+core (\fBservice_manager\fR, \fBswap\fR, \fBzram\fR, \fBjournal_optimizer\fR,
+\fBmemory_optimizer\fR, \fBsecurity\fR) son Linux-específicos y no funcionan
+ahí. En FreeBSD, usa \fBlso detect\fR y \fBlso module package_optimizer\fR;
+evita correr perfiles completos (\fBlso optimize\fR) por ahora.
+.TP
+.B gpu_optimizer es solo diagnóstico
+Reporta vendor, modelo y driver de GPU en uso, y como mucho sugiere en texto
+el comando a correr manualmente (p. ej. \fBubuntu\-drivers devices\fR). Nunca
+instala ni cambia drivers de GPU de forma automática — ese riesgo (romper la
+sesión gráfica) no se automatiza en LSO, ni siquiera con confirmación.
 .SH ARCHIVOS
 .TP
 .I config/settings.conf
 Configuración global (umbrales, swappiness, zram, journald, red).
 .TP
 .I config/profiles/*.conf
-Un archivo por perfil (desktop, laptop, gaming, workstation, server, dev).
+Un archivo por perfil (desktop, laptop, gaming, workstation, server, dev,
+docker, database).
 .TP
 .I config/rules/*.rules
 Reglas del motor de reglas condicionales.
@@ -199,6 +235,12 @@ entornos virtuales y limpieza de caché.
 .TP
 sudo lso rules \-\-dry\-run
 Evalúa el motor de reglas en modo simulación.
+.TP
+sudo lso optimize \-\-profile docker
+Limpia contenedores/redes/imágenes no usados en un host Docker/Podman.
+.TP
+sudo lso optimize \-\-profile database
+Ajusta el kernel para cargas de BD e inicia motores de base de datos instalados.
 .SH VÉASE TAMBIÉN
 .I README.md ", " CHANGELOG.md
 en la raíz del repositorio.

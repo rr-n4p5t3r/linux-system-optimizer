@@ -1,5 +1,6 @@
+#!/usr/bin/env bash
 # =============================================================================
-# desktop.rules — Reglas de optimización de escritorio
+# xbps.sh — Utilidades para XBPS (Void Linux)
 # =============================================================================
 # Linux System Optimizer (LSO)
 # Autor: Ricardo Rosero <rrosero2000@gmail.com>
@@ -7,11 +8,22 @@
 # Licencia: GPLv3
 # =============================================================================
 
-desktop == gnome -> optimize_gnome
-desktop == kde -> optimize_kde
-desktop == cinnamon -> optimize_cinnamon
-desktop == xfce -> optimize_xfce
-desktop == mate -> optimize_mate
-desktop == lxqt -> optimize_lxqt
-desktop == budgie -> optimize_budgie
-desktop == cosmic -> optimize_cosmic
+xbps_update() {
+    xbps-install -S 2>/dev/null
+}
+
+xbps_upgrade() {
+    xbps-install -Suy 2>/dev/null
+}
+
+xbps_autoremove() {
+    xbps-remove -Oy 2>/dev/null
+}
+
+xbps_clean() {
+    rm -f /var/cache/xbps/*.xbps 2>/dev/null
+}
+
+xbps_fix() {
+    xbps-pkgdb -a 2>/dev/null
+}

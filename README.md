@@ -10,7 +10,8 @@ GitHub: [@rr-n4p5t3r](https://github.com/rr-n4p5t3r)
 ## Características
 
 - **Detección automática** de distribución, escritorio, hardware y software
-- **Perfiles de optimización** preconfigurados (desktop, laptop, gaming, workstation, server, dev)
+- **23 distribuciones soportadas** (22 Linux + soporte experimental de FreeBSD — ver nota abajo)
+- **Perfiles de optimización** preconfigurados (desktop, laptop, gaming, workstation, server, dev, docker, database)
 - **Módulos independientes** que pueden ejecutarse por separado
 - **Backups automáticos** antes de cualquier cambio permanente
 - **Sistema de plugins** extensible
@@ -47,6 +48,12 @@ sudo lso optimize --profile gaming
 # Optimizar con perfil dev (bases de datos, entornos virtuales, lenguajes)
 sudo lso optimize --profile dev
 
+# Optimizar un host de contenedores
+sudo lso optimize --profile docker
+
+# Optimizar un servidor dedicado de base de datos
+sudo lso optimize --profile database
+
 # Ejecutar módulo específico
 sudo lso module memory_optimizer
 
@@ -62,6 +69,11 @@ Para la referencia completa de comandos, opciones, perfiles y el motor de reglas
 ```bash
 man lso
 ```
+
+### Nota sobre FreeBSD y GPU
+
+- **FreeBSD es soporte experimental.** No es una distro de Linux — es otro sistema operativo. LSO detecta FreeBSD y soporta su gestor de paquetes (`pkg`), pero la mayoría de los módulos del core (`service_manager`, `swap`, `zram`, `journal_optimizer`, `memory_optimizer`, `security`) son Linux-específicos y no funcionan ahí. En FreeBSD, usa `lso detect` y `lso module package_optimizer`, pero evita correr perfiles completos (`lso optimize`) por ahora.
+- **`gpu_optimizer` es solo diagnóstico.** Reporta vendor, modelo y driver en uso, y sugiere en texto qué comando correr — nunca instala ni cambia drivers de GPU automáticamente. Cambiar el driver de una GPU puede romper la sesión gráfica, y ese riesgo no se automatiza en LSO.
 
 ## Arquitectura
 

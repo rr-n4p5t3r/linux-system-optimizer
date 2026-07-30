@@ -113,22 +113,28 @@ run_optimization() {
 
     case "$profile" in
         desktop)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         laptop)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "cache_cleaner" "package_optimizer" "swap")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "power_optimizer" "gpu_optimizer" "cache_cleaner" "package_optimizer" "swap")
             ;;
         gaming)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "disk_optimizer" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "disk_optimizer" "package_optimizer")
             ;;
         workstation)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "disk_optimizer" "network_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "virtualization_optimizer" "disk_optimizer" "network_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         server)
             modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "disk_optimizer" "network_optimizer" "journal_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         dev)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "dev_environment" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "dev_environment" "virtualization_optimizer" "cache_cleaner" "package_optimizer")
+            ;;
+        docker)
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "docker_optimizer" "cache_cleaner" "package_optimizer")
+            ;;
+        database)
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "disk_optimizer" "database_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         *)
             modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "cache_cleaner")
