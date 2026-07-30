@@ -2,6 +2,53 @@
 
 Todos los cambios notables de este proyecto serán documentados aquí.
 
+## [0.3.1-alpha] - 2026-07-29
+
+Rediseña el sistema de reportes: el reporte de `lso optimize`/`lso analyze`
+era una foto estática del sistema, sin reflejar nada de lo que la
+herramienta realmente hacía. Se refina lo que ya existía en 0.3.0 (no agrega
+una categoría nueva de funcionalidad), así que queda como versión de parche.
+
+### Añadido
+- **Resumen de la ejecución** en el reporte: qué módulos corrieron en esa
+  corrida y si terminaron OK o con advertencia. `core/engine.sh` ahora
+  rastrea esto en `LSO_RUN_MODULES`/`LSO_RUN_RESULTS` (poblados por
+  `run_module()`), sin necesidad de tocar los 26 módulos existentes.
+- **Reglas activadas** en el reporte: `core/rule_engine.sh` ahora registra
+  cada regla que se activó (`LSO_RUN_RULES_ACTIVATED`). De paso, esto hizo
+  visible algo que antes pasaba desapercibido: `browser_optimizer` y
+  `cache_cleaner` pueden correr dos veces en la misma corrida — una vez
+  como parte del perfil, y otra si una regla de `browser.rules` los vuelve
+  a disparar. Es el comportamiento esperado del motor de reglas, ahora
+  queda documentado en el reporte en vez de perderse en la pantalla.
+- **Diagnóstico de seguridad** integrado: `modules/security.sh` expone
+  `LSO_SECURITY_REPORT` (antes solo imprimía en pantalla, no quedaba
+  registrado en ningún lado). Se agregó `security` a los módulos
+  automáticos de los 8 perfiles — antes solo corría con
+  `lso module security` manual — para que el reporte de una corrida normal
+  tenga estos datos.
+- **Historial entre corridas**: `reports/.lso-history.csv` (oculto, no
+  versionado) guarda RAM/disco/CPU de cada corrida; el reporte muestra el
+  delta contra la corrida anterior (`▲ +3.2%`, `▼ -1.1%`, `= sin cambio`, o
+  "primera corrida registrada" si no hay historial previo).
+
+### Cambiado
+- **Reportes unificados**: `modules/analyzer.sh` generaba su propio archivo
+  separado (`reports/analysis-*.txt`), redundante con el de
+  `modules/report.sh` (`reports/lso-report-*.html/txt`) de la misma
+  corrida. Ahora `analyzer.sh` expone `LSO_ANALYSIS_REPORT` (y
+  `LSO_ANALYSIS_{CPU,RAM,DISK}_PERCENT`, usados también para el historial)
+  como variables globales en vez de escribir su propio archivo;
+  `report.sh` las embebe en el reporte único. `reports/` ya no acumula
+  `analysis-*.txt` sueltos.
+- **`lso analyze`** ahora también genera el reporte unificado al final
+  (antes solo `lso optimize` lo hacía) — mismo reporte, con la sección de
+  ejecución mostrando solo `analyzer` y sin reglas activadas, ya que el
+  motor de reglas no corre en modo `analyze`.
+- `lso module report` corrido de forma aislada (sin un `optimize`/`analyze`
+  previo en el mismo proceso) sigue funcionando: las secciones que dependen
+  de esos módulos se muestran como no disponibles en vez de fallar.
+
 ## [0.3.0-alpha] - 2026-07-29
 
 Amplía distros, gestores de paquetes, módulos y perfiles siguiendo el roadmap

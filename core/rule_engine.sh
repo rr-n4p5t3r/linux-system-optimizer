@@ -11,6 +11,9 @@
 
 LSO_RULES_DIR="${LSO_BASE_DIR}/config/rules"
 
+# Reglas activadas en esta corrida, para que modules/report.sh las incluya.
+LSO_RUN_RULES_ACTIVATED=()
+
 # Resuelve un valor de condición antes de una comparación numérica:
 # sustituye la referencia simbólica "cores" por LSO_CPU_CORES (permite
 # expresiones como "cores * 2") y normaliza sufijos de tamaño (GB/MB/KB/TB/B)
@@ -163,11 +166,13 @@ load_rules() {
 
             if $all_match; then
                 log_info "Regla activada: $condition -> $action"
+                LSO_RUN_RULES_ACTIVATED+=("$condition -> $action")
                 execute_rule_action "$action"
             fi
         else
             if evaluate_condition "$condition"; then
                 log_info "Regla activada: $condition -> $action"
+                LSO_RUN_RULES_ACTIVATED+=("$condition -> $action")
                 execute_rule_action "$action"
             fi
         fi

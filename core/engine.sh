@@ -14,6 +14,11 @@ LSO_PROFILE=""
 LSO_DRY_RUN=false
 LSO_FORCE=false
 
+# Rastreo de la corrida actual, para que modules/report.sh pueda construir
+# un resumen de "qué hizo LSO" sin que cada módulo tenga que reportarlo.
+LSO_RUN_MODULES=()
+LSO_RUN_RESULTS=()
+
 load_config() {
     local config_file="${LSO_CONFIG_DIR}/settings.conf"
 
@@ -66,8 +71,12 @@ run_module() {
     local module_exit=$?
     set -e
 
+    LSO_RUN_MODULES+=("$module_name")
     if [[ $module_exit -ne 0 ]]; then
+        LSO_RUN_RESULTS+=("WARN")
         log_warn "El módulo $module_name terminó con código $module_exit"
+    else
+        LSO_RUN_RESULTS+=("OK")
     fi
 
     plugin_hook "post_${module_name}"
@@ -99,6 +108,7 @@ run_modules() {
 run_analysis() {
     print_header "ANÁLISIS COMPLETO DEL SISTEMA"
     run_module "analyzer" || log_warn "El análisis tuvo problemas"
+    run_module "report" || log_warn "El reporte tuvo problemas"
 }
 
 run_optimization() {
@@ -113,31 +123,31 @@ run_optimization() {
 
     case "$profile" in
         desktop)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         laptop)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "power_optimizer" "gpu_optimizer" "cache_cleaner" "package_optimizer" "swap")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "power_optimizer" "gpu_optimizer" "cache_cleaner" "package_optimizer" "swap")
             ;;
         gaming)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "disk_optimizer" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "disk_optimizer" "package_optimizer")
             ;;
         workstation)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "virtualization_optimizer" "disk_optimizer" "network_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "startup_manager" "desktop_optimizer" "browser_optimizer" "bluetooth_optimizer" "gpu_optimizer" "virtualization_optimizer" "disk_optimizer" "network_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         server)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "disk_optimizer" "network_optimizer" "journal_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "disk_optimizer" "network_optimizer" "journal_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         dev)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "startup_manager" "dev_environment" "virtualization_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "startup_manager" "dev_environment" "virtualization_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         docker)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "docker_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "docker_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         database)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "disk_optimizer" "database_optimizer" "cache_cleaner" "package_optimizer")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "disk_optimizer" "database_optimizer" "cache_cleaner" "package_optimizer")
             ;;
         *)
-            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "cache_cleaner")
+            modules_to_run=("analyzer" "cpu_optimizer" "process_manager" "service_manager" "security" "cache_cleaner")
             ;;
     esac
 
