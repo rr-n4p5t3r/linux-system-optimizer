@@ -36,7 +36,7 @@ optimize_processes() {
 
     # --- Verificar procesos zombie ---
     print_step "Verificando procesos zombie..."
-    local zombies
+    local zombies=""
     zombies=$(ps aux 2>/dev/null | awk '$8 ~ /^Z/ {print $2, $11}' || true)
 
     if [[ -n "$zombies" ]]; then
@@ -62,7 +62,7 @@ optimize_processes() {
 
     # Bajar prioridad de indexadores y otros procesos no críticos conocidos
     for proc in "${LSO_CANDIDATE_PROCESES[@]}"; do
-        local pids
+        local pids=""
         pids=$(pgrep -f "$proc" 2>/dev/null || true)
         if [[ -n "$pids" ]]; then
             for pid in $pids; do
@@ -78,13 +78,13 @@ optimize_processes() {
 
     # --- Verificar procesos duplicados ---
     print_step "Verificando procesos duplicados..."
-    local duplicates
+    local duplicates=""
     duplicates=$(ps aux 2>/dev/null | awk '{print $11}' | sort | uniq -d | grep -v '^\[' || true)
 
     if [[ -n "$duplicates" ]]; then
         echo -e "  ${C_DIM}Procesos con múltiples instancias:${C_RESET}"
         echo "$duplicates" | head -5 | while read proc; do
-            local count
+            local count=""
             count=$(pgrep -c -f "$proc" 2>/dev/null || echo "0")
             echo -e "    ${C_CYAN}$proc: ${count} instancias${C_RESET}"
         done

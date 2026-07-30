@@ -19,7 +19,7 @@ optimize_disk() {
     if [[ "$LSO_DISK_TYPE" == "HDD" ]]; then
         print_step "Verificando fragmentación..."
         if command -v e4defrag &>/dev/null; then
-            local frag
+            local frag=""
             frag=$(e4defrag -c / 2>/dev/null | grep -oP '\d+(?=%)' | head -1 || echo "0")
             echo -e "  ${C_DIM}Fragmentación:${C_RESET} ${C_CYAN}${frag}%${C_RESET}"
 
@@ -37,14 +37,14 @@ optimize_disk() {
 
     # --- Verificar inodos ---
     print_step "Verificando uso de inodos..."
-    local inode_usage
+    local inode_usage=""
     inode_usage=$(df -i / 2>/dev/null | tail -1 | awk '{print $5}' | tr -d '%')
     echo -e "  ${C_DIM}Uso de inodos:${C_RESET} ${C_CYAN}${inode_usage}%${C_RESET}"
 
     # --- SMART (si disponible) ---
     if command -v smartctl &>/dev/null; then
         print_step "Verificando salud del disco (SMART)..."
-        local smart_status
+        local smart_status=""
         smart_status=$(smartctl -H /dev/sda 2>/dev/null | grep -i "health" || echo "No disponible")
         echo -e "  ${C_DIM}Estado SMART:${C_RESET} ${C_CYAN}${smart_status}${C_RESET}"
     fi

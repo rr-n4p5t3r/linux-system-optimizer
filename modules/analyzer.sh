@@ -18,9 +18,9 @@ analyze_system() {
     LSO_ANALYSIS_REPORT+="Fecha: $(date)\n\n"
 
     print_step "Analizando CPU..."
-    local cpu_usage
+    local cpu_usage=""
     cpu_usage=$(awk '{print $1}' < /proc/loadavg)
-    local cpu_percent
+    local cpu_percent=""
     cpu_percent=$(awk "BEGIN {printf \"%.1f\", ($cpu_usage / $LSO_CPU_CORES) * 100}")
 
     LSO_ANALYSIS_CPU_PERCENT="$cpu_percent"
@@ -103,7 +103,7 @@ analyze_system() {
     LSO_ANALYSIS_REPORT+="\n\n"
 
     print_step "Servicios activos..."
-    local active_services
+    local active_services=""
     active_services=$(systemctl list-units --type=service --state=active --no-pager --no-legend 2>/dev/null | wc -l)
     echo -e "  ${C_DIM}Servicios activos:${C_RESET} ${C_CYAN}${active_services}${C_RESET}"
     LSO_ANALYSIS_REPORT+="[SERVICIOS] Activos: ${active_services}\n\n"
@@ -112,24 +112,24 @@ analyze_system() {
     local cache_size=0
 
     if [[ -d /var/cache/apt/archives ]]; then
-        local apt_cache
+        local apt_cache=""
         apt_cache=$(du -sb /var/cache/apt/archives 2>/dev/null | cut -f1)
         cache_size=$((cache_size + apt_cache))
     fi
 
     if [[ -d /var/cache/dnf ]]; then
-        local dnf_cache
+        local dnf_cache=""
         dnf_cache=$(du -sb /var/cache/dnf 2>/dev/null | cut -f1)
         cache_size=$((cache_size + dnf_cache))
     fi
 
     if [[ -d /var/cache/pacman/pkg ]]; then
-        local pacman_cache
+        local pacman_cache=""
         pacman_cache=$(du -sb /var/cache/pacman/pkg 2>/dev/null | cut -f1)
         cache_size=$((cache_size + pacman_cache))
     fi
 
-    local journal_size
+    local journal_size=""
     journal_size=$(journalctl --disk-usage 2>/dev/null | grep -oP '\d+\.?\d*[KMGT]?' | head -1 || echo "0")
 
     echo -e "  ${C_DIM}Caché de paquetes:${C_RESET} ${C_CYAN}$(human_size "$cache_size")${C_RESET}"
@@ -142,14 +142,14 @@ analyze_system() {
         print_step "Temperaturas..."
         for temp in /sys/class/thermal/thermal_zone*/temp; do
             [[ -f "$temp" ]] || continue
-            local temp_val
+            local temp_val=""
             temp_val=$(cat "$temp" 2>/dev/null)
             [[ -z "$temp_val" ]] && continue
-            local temp_c
+            local temp_c=""
             temp_c=$(awk "BEGIN {printf \"%.1f\", $temp_val / 1000}")
-            local zone
+            local zone=""
             zone=$(basename "$(dirname "$temp")")
-            local type
+            local type=""
             type=$(cat "$(dirname "$temp")/type" 2>/dev/null || echo "$zone")
             echo -e "  ${C_DIM}${type}:${C_RESET} ${C_CYAN}${temp_c}°C${C_RESET}"
         done

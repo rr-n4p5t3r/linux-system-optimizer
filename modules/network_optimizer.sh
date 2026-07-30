@@ -6,7 +6,7 @@ optimize_network() {
     # --- TCP BBR (si el kernel lo soporta) ---
     if [[ "${LSO_NETWORK_OPTIMIZE_TCP:-true}" == "true" ]]; then
         print_step "Verificando algoritmo de congestión TCP..."
-        local current_cc
+        local current_cc=""
         current_cc=$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null || echo "unknown")
         echo -e "  ${C_DIM}Actual:${C_RESET} ${C_CYAN}${current_cc}${C_RESET}"
 
@@ -43,7 +43,7 @@ optimize_network() {
     if [[ "${LSO_NETWORK_DNS_OPTIMIZE:-false}" == "true" ]]; then
         print_step "Verificando resolución DNS..."
         # Solo informativo, no modificamos resolv.conf sin consentimiento
-        local current_dns
+        local current_dns=""
         current_dns=$(grep "^nameserver" /etc/resolv.conf 2>/dev/null | head -3 || echo "No disponible")
         echo -e "  ${C_DIM}DNS actual:${C_RESET}"
         echo "$current_dns" | sed 's/^/    /'

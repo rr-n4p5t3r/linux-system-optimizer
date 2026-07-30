@@ -2,6 +2,30 @@
 
 Todos los cambios notables de este proyecto serán documentados aquí.
 
+## [0.3.2-alpha] - 2026-07-30
+
+Corrige un bug real reportado en producción: `lso optimize server` moría con
+`disk_name: unbound variable` en `core/detector.sh` al detectar el tipo de
+disco en un servidor Debian con LVM (`/dev/mapper/...`) que no tiene
+`dmsetup` instalado (instalación minimal). El error solo aparecía en esa
+combinación específica, por eso no se había detectado en desarrollo.
+
+### Corregido
+- **Causa raíz**: bajo `set -u` (activo en `optimizer.sh`), una declaración
+  `local disk_name` sin inicializar NO cuenta como "definida" hasta que se le
+  asigna un valor. En `detect_disk_type()`, esa asignación solo ocurría si
+  `dmsetup` estaba disponible; si no, la variable seguía sin asignar y la
+  siguiente lectura (`[[ -z "$disk_name" ]]`) hacía abortar el script entero
+  con `set -u`.
+- **Auditoría completa del codebase**: se encontraron 82 declaraciones
+  `local <var>` sin inicializar en 27 archivos (`core/`, `modules/`,
+  `distros/`, `lib/`), todas con el mismo riesgo latente. Se corrigieron
+  todas a `local <var>=""` para eliminar esta clase de bug de raíz, en vez
+  de parchar solo el caso reportado.
+- Verificado: `bash -n` en todos los `.sh` del proyecto, reproducción
+  puntual del escenario (LVM + `dmsetup` ausente del `PATH`) confirmando que
+  ya no aborta, y `lso optimize server --dry-run` completo de punta a punta.
+
 ## [0.3.1-alpha] - 2026-07-29
 
 Rediseña el sistema de reportes: el reporte de `lso optimize`/`lso analyze`

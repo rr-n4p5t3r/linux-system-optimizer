@@ -19,7 +19,7 @@ optimize_bluetooth() {
     print_step "Dispositivos emparejados..."
     local paired_count=0
     if command -v bluetoothctl &>/dev/null; then
-        local devices
+        local devices=""
         devices=$(bluetoothctl devices 2>/dev/null)
         paired_count=$(echo "$devices" | grep -c "^Device" || echo "0")
 

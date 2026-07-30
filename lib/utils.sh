@@ -32,7 +32,7 @@ check_deps() {
 
 confirm() {
     local msg="${1:-¿Continuar?}"
-    local response
+    local response=""
     read -rp "$(echo -e "${C_YELLOW}$msg [s/N]: ${C_RESET}")" response
     [[ "$response" =~ ^[Ss]$ ]]
 }
@@ -50,7 +50,7 @@ service_exists() {
 backup_file() {
     local file="$1"
     local backup_dir="${LSO_BASE_DIR}/backups"
-    local backup_path
+    local backup_path=""
     backup_path="${backup_dir}/$(basename "$file").$(date +%s).bak"
 
     mkdir -p "$backup_dir" 2>/dev/null || {
@@ -80,9 +80,9 @@ restore_file() {
         return 1
     fi
 
-    local filename
+    local filename=""
     filename=$(basename "$backup_path")
-    local original_name
+    local original_name=""
     original_name=$(echo "$filename" | sed 's/\.[0-9]*\.bak$//')
 
     local target_path=""
