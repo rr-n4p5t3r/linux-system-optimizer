@@ -12,16 +12,7 @@ optimize_rocky() {
     print_step "Aplicando optimizaciones para Rocky Linux..."
 
     if [[ "$LSO_DRY_RUN" != "true" ]]; then
-        cat > /etc/dnf/dnf.conf << 'DNFEOF'
-[main]
-gpgcheck=1
-installonly_limit=3
-clean_requirements_on_remove=True
-best=False
-skip_if_unavailable=True
-fastestmirror=True
-max_parallel_downloads=10
-DNFEOF
+        lso_tune_dnf_conf /etc/dnf/dnf.conf
     fi
 }
 optimize_rocky

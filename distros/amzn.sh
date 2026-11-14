@@ -12,18 +12,7 @@ optimize_amzn() {
     print_step "Aplicando optimizaciones para Amazon Linux..."
 
     if [[ "$LSO_DRY_RUN" != "true" ]]; then
-        mkdir -p /etc/dnf
-        cat > /etc/dnf/dnf.conf << 'DNFEOF'
-[main]
-gpgcheck=1
-installonly_limit=3
-clean_requirements_on_remove=True
-best=False
-skip_if_unavailable=True
-fastestmirror=True
-max_parallel_downloads=10
-deltarpm=True
-DNFEOF
+        lso_tune_dnf_conf /etc/dnf/dnf.conf deltarpm
         log_success "DNF optimizado"
     fi
 

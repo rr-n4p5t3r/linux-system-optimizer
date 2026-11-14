@@ -47,17 +47,60 @@ service_exists() {
     return 1
 }
 
+# --- Directorios seguros ------------------------------------------------------
+# LSO corre como root: escribir en un directorio donde otro usuario puede crear
+# archivos permite ataques con enlaces simbólicos (root termina escribiendo en
+# /etc/shadow o restaurando un archivo preparado por el atacante).
+
+# lso_safe_dir DIR → 0 si es un directorio real (no enlace), cuyo dueño es
+# root o el usuario actual y que no es escribible por grupo ni otros.
+lso_safe_dir() {
+    local d="$1" perm owner
+    [[ -d "$d" && ! -L "$d" ]] || return 1
+    perm=$(stat -c '%a' "$d" 2>/dev/null) || return 1
+    owner=$(stat -c '%u' "$d" 2>/dev/null) || return 1
+    [[ "$owner" == 0 || "$owner" == "${EUID:-$(id -u)}" ]] || return 1
+    (( 8#$perm & 8#022 )) && return 1
+    return 0
+}
+
+# lso_state_dir SUBDIR → directorio seguro para datos de LSO (logs, backups).
+# Root: /var/lib/lso/SUBDIR (logs en /var/log/lso). Usuario: ~/.local/state/lso/SUBDIR.
+lso_state_dir() {
+    local sub="$1" d
+    if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+        if [[ "$sub" == logs ]]; then d="/var/log/lso"; else d="/var/lib/lso/$sub"; fi
+    else
+        d="${XDG_STATE_HOME:-${HOME:-/tmp}/.local/state}/lso/$sub"
+    fi
+    if (umask 077; mkdir -p "$d") 2>/dev/null && lso_safe_dir "$d"; then
+        printf '%s\n' "$d"
+        return 0
+    fi
+    # Último recurso: un directorio temporal nuevo y privado (nunca un nombre fijo).
+    mktemp -d "${TMPDIR:-/tmp}/lso-${sub}.XXXXXX"
+}
+
+# lso_pick_dir PREFERIDO SUBDIR → PREFERIDO si es seguro y escribible; si no, lso_state_dir
+lso_pick_dir() {
+    local want="$1" sub="$2"
+    (umask 022; mkdir -p "$want") 2>/dev/null
+    if lso_safe_dir "$want" && [[ -w "$want" ]]; then
+        printf '%s\n' "$want"
+    else
+        lso_state_dir "$sub"
+    fi
+}
+
 backup_file() {
     local file="$1"
-    local backup_dir="${LSO_BASE_DIR}/backups"
+    local backup_dir=""
+    backup_dir=$(lso_pick_dir "${LSO_BASE_DIR}/backups" backups) || {
+        log_warn "No hay un directorio seguro para backups"
+        return 1
+    }
     local backup_path=""
     backup_path="${backup_dir}/$(basename "$file").$(date +%s).bak"
-
-    mkdir -p "$backup_dir" 2>/dev/null || {
-        backup_dir="/tmp/lso-backups"
-        mkdir -p "$backup_dir"
-        backup_path="${backup_dir}/$(basename "$file").$(date +%s).bak"
-    }
 
     if [[ -f "$file" ]]; then
         cp -a "$file" "$backup_path" 2>/dev/null || {
@@ -145,4 +188,60 @@ is_laptop() {
     [[ -d /sys/class/power_supply/BAT1 ]] || \
     (command -v dmidecode &>/dev/null && dmidecode -s chassis-type 2>/dev/null | grep -qi "laptop\|notebook\|portable") || \
     return 1
+}
+
+# --- Configuración -------------------------------------------------------------
+
+# set_conf_key ARCHIVO CLAVE VALOR [SECCIÓN] → fija "CLAVE=VALOR" sin tocar el
+# resto del archivo: reemplaza la línea existente o la agrega al final. Si el
+# archivo no existe y se indica SECCIÓN, lo crea con ese encabezado ([main]).
+set_conf_key() {
+    local file="$1" key="$2" value="$3" section="${4:-}"
+    if [[ ! -f "$file" ]]; then
+        mkdir -p "$(dirname "$file")"
+        if [[ -n "$section" ]]; then printf '[%s]\n' "$section" > "$file"; else : > "$file"; fi
+    fi
+    if grep -qE "^[[:space:]]*${key}[[:space:]]*=" "$file"; then
+        sed -i -E "s|^[[:space:]]*${key}[[:space:]]*=.*|${key}=${value}|" "$file"
+    else
+        printf '%s=%s\n' "$key" "$value" >> "$file"
+    fi
+}
+
+# --- Usuario real ----------------------------------------------------------------
+
+# lso_target_home → home del usuario que invocó sudo (o el $HOME actual).
+# Con sudo, $HOME suele ser /root y las optimizaciones de usuario (navegadores,
+# caché, autoarranque) caerían en la cuenta equivocada.
+lso_target_home() {
+    local h=""
+    if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != root ]]; then
+        h=$(getent passwd "$SUDO_USER" 2>/dev/null | cut -d: -f6)
+    fi
+    printf '%s\n' "${h:-${HOME:-}}"
+}
+
+# lso_target_user → usuario que invocó sudo (o el actual).
+lso_target_user() {
+    if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != root ]]; then
+        printf '%s\n' "$SUDO_USER"
+    else
+        id -un
+    fi
+}
+
+# lso_tune_dnf_conf [ARCHIVO] [deltarpm] → ajusta solo las claves de
+# rendimiento de DNF, con backup previo, conservando el resto del archivo
+# (proxy, exclusiones, etc.). Antes se sobrescribía dnf.conf completo.
+lso_tune_dnf_conf() {
+    local conf="${1:-/etc/dnf/dnf.conf}" with_delta="${2:-}" kv
+    [[ -f "$conf" ]] && backup_file "$conf" >/dev/null
+    local -a settings=(
+        gpgcheck=1 installonly_limit=3 clean_requirements_on_remove=True best=False
+        skip_if_unavailable=True fastestmirror=True max_parallel_downloads=10
+    )
+    [[ "$with_delta" == deltarpm ]] && settings+=(deltarpm=True)
+    for kv in "${settings[@]}"; do
+        set_conf_key "$conf" "${kv%%=*}" "${kv#*=}" main
+    done
 }

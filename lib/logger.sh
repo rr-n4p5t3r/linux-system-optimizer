@@ -14,21 +14,20 @@ LSO_LOG_FILE=""
 LSO_MAX_LOG_AGE_DAYS=30
 
 init_logger() {
-    if [[ ! -d "$LSO_LOG_DIR" ]]; then
-        mkdir -p "$LSO_LOG_DIR" 2>/dev/null || {
-            LSO_LOG_DIR="/tmp/lso-logs"
-            mkdir -p "$LSO_LOG_DIR"
-        }
+    # Nunca escribir logs como root en un directorio donde otros puedan crear
+    # archivos (ver lso_safe_dir en utils.sh): si el preferido no es seguro,
+    # se usa /var/log/lso (root) o ~/.local/state/lso/logs (usuario).
+    if declare -F lso_pick_dir >/dev/null; then
+        LSO_LOG_DIR=$(lso_pick_dir "$LSO_LOG_DIR" logs) || LSO_LOG_DIR=""
     fi
-
-    if [[ ! -w "$LSO_LOG_DIR" ]]; then
-        LSO_LOG_DIR="/tmp/lso-logs"
-        mkdir -p "$LSO_LOG_DIR"
+    if [[ -z "$LSO_LOG_DIR" ]]; then
+        LSO_LOG_FILE="/dev/null"
+        return 0
     fi
 
     LSO_LOG_FILE="${LSO_LOG_DIR}/lso-$(date +%Y%m%d-%H%M%S).log"
 
-    if ! touch "$LSO_LOG_FILE" 2>/dev/null; then
+    if ! ( set -o noclobber; : > "$LSO_LOG_FILE" ) 2>/dev/null && [[ ! -f "$LSO_LOG_FILE" || -L "$LSO_LOG_FILE" ]]; then
         LSO_LOG_FILE="/dev/null"
         return 0
     fi
