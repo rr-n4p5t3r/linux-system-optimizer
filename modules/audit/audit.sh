@@ -83,7 +83,7 @@ audit_main() {
         esac
         shift
     done
-    : "$fast"  # aceptada; las revisiones lentas llegan en la fase 3
+    AUDIT_FAST=$fast
 
     if [[ "${LSO_DISTRO_ID:-}" == freebsd ]]; then
         echo "lso audit: FreeBSD todavía no está soportado." >&2

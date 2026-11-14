@@ -16,13 +16,14 @@ audit_reset() {
     AUDIT_IDS=()
     declare -gA AUDIT_SEV=() AUDIT_BASE_SEV=() AUDIT_CAT=() AUDIT_TITLE=() \
         AUDIT_FUNC=() AUDIT_FIX=() AUDIT_STATUS=() AUDIT_DETAIL=() \
-        AUDIT_ADJ=() AUDIT_FORCE_NA=() AUDIT_WAIVED=()
+        AUDIT_ADJ=() AUDIT_FORCE_NA=() AUDIT_WAIVED=() AUDIT_SLOW=()
     AUDIT_CURRENT=""
 }
 
-# audit_register ID SEVERIDAD CATEGORIA "TITULO" FUNCION "FIX"
+# audit_register ID SEVERIDAD CATEGORIA "TITULO" FUNCION "FIX" [slow]
+# "slow" marca revisiones lentas (recorren discos) que --fast omite.
 audit_register() {
-    local id="$1" sev="$2" cat="$3" title="$4" fn="$5" fix="${6:-}"
+    local id="$1" sev="$2" cat="$3" title="$4" fn="$5" fix="${6:-}" speed="${7:-}"
     case "$sev" in
         critical|high|medium|low|info) ;;
         *)
@@ -38,6 +39,9 @@ audit_register() {
     AUDIT_FUNC[$id]="$fn"
     AUDIT_FIX[$id]="$fix"
     AUDIT_ADJ[$id]=""
+    AUDIT_SLOW[$id]=""
+    [[ "$speed" == slow ]] && AUDIT_SLOW[$id]=1
+    return 0
 }
 
 # Fija el resultado de la revisión en curso; solo cuenta el primero.
@@ -67,6 +71,11 @@ audit_run_all() {
         if [[ -n "${AUDIT_FORCE_NA[$id]:-}" ]]; then
             AUDIT_STATUS[$id]="NA"
             AUDIT_DETAIL[$id]="${AUDIT_FORCE_NA[$id]}"
+            continue
+        fi
+        if [[ "${AUDIT_FAST:-0}" == 1 && -n "${AUDIT_SLOW[$id]:-}" ]]; then
+            AUDIT_STATUS[$id]="SKIP"
+            AUDIT_DETAIL[$id]="Omitida con --fast"
             continue
         fi
         AUDIT_CURRENT="$id"

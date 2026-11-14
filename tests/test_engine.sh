@@ -73,3 +73,19 @@ test_invalid_severity_rejected() {
     audit_reset
     assert_status 1 audit_register T-001 enorme demo "t" _pass_fn "fix"
 }
+
+test_fast_skips_slow_checks() {
+    audit_reset
+    CALLS=0
+    audit_register T-001 high demo "t" _count_fn "fix" slow
+    audit_register T-002 high demo "t" _pass_fn "fix"
+    AUDIT_FAST=1
+    audit_run_all
+    assert_eq "SKIP" "${AUDIT_STATUS[T-001]}"
+    assert_eq "Omitida con --fast" "${AUDIT_DETAIL[T-001]}"
+    assert_eq "0" "$CALLS"
+    assert_eq "PASS" "${AUDIT_STATUS[T-002]}"
+    AUDIT_FAST=0
+    audit_run_all
+    assert_eq "FAIL" "${AUDIT_STATUS[T-001]}"
+}
