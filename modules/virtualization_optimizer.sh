@@ -34,7 +34,7 @@ optimize_virtualization() {
 
     if [[ -n "${SUDO_USER:-}" ]]; then
         print_step "Grupos de virtualización para ${SUDO_USER}..."
-        local in_groups
+        local in_groups=""
         in_groups=$(groups "$SUDO_USER" 2>/dev/null)
 
         for grp in libvirt kvm; do

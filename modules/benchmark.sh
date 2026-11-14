@@ -12,7 +12,7 @@ run_benchmarks() {
     print_header "BENCHMARKS DEL SISTEMA"
 
     print_step "Benchmark de CPU (10M de operaciones)..."
-    local cpu_time
+    local cpu_time=""
     cpu_time=$(time (
         for i in {1..10000000}; do
             : $((i * 2))
@@ -33,7 +33,7 @@ run_benchmarks() {
     print_step "Verificando conectividad de red..."
     if ping -c 1 -W 2 1.1.1.1 &>/dev/null; then
         echo -e "  ${C_GREEN}✓ Conectividad a Internet: OK${C_RESET}"
-        local latency
+        local latency=""
         latency=$(ping -c 3 1.1.1.1 2>/dev/null | tail -1 | awk -F'/' '{print $5}' || echo "N/A")
         echo -e "  ${C_DIM}Latencia promedio (1.1.1.1):${C_RESET} ${C_CYAN}${latency}ms${C_RESET}"
     else

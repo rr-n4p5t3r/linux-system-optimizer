@@ -22,12 +22,12 @@ optimize_freebsd() {
     print_step "Verificando FreeBSD (soporte experimental)..."
     print_warn "Muchos módulos de LSO son Linux-específicos y no aplican en FreeBSD"
 
-    local bsd_version
+    local bsd_version=""
     bsd_version=$(uname -r 2>/dev/null || echo "desconocida")
     log_info "Versión de FreeBSD: ${bsd_version}"
 
     if command -v pkg &>/dev/null; then
-        local pkg_count
+        local pkg_count=""
         pkg_count=$(pkg info 2>/dev/null | wc -l)
         log_info "Paquetes instalados (pkg): ${pkg_count}"
     fi

@@ -22,7 +22,7 @@ _lso_report_delta() {
         return 0
     fi
 
-    local diff
+    local diff=""
     diff=$(awk "BEGIN {printf \"%.1f\", $current - $previous}")
 
     if awk "BEGIN {exit !($diff > 0)}"; then
@@ -37,7 +37,7 @@ _lso_report_delta() {
 generate_report() {
     print_header "GENERANDO REPORTE"
 
-    local report_file
+    local report_file=""
     report_file="${LSO_BASE_DIR}/reports/lso-report-$(date +%Y%m%d-%H%M%S).html"
     mkdir -p "${LSO_BASE_DIR}/reports"
 
@@ -48,7 +48,7 @@ generate_report() {
 
     # --- Resumen de ejecución: qué módulos corrieron y cómo terminaron ---
     local exec_html="" exec_txt=""
-    local i
+    local i=""
     for i in "${!LSO_RUN_MODULES[@]}"; do
         local mod="${LSO_RUN_MODULES[$i]}"
         local res="${LSO_RUN_RESULTS[$i]}"
@@ -67,7 +67,7 @@ generate_report() {
 
     # --- Reglas del motor de reglas activadas ---
     local rules_html="" rules_txt=""
-    local rule
+    local rule=""
     for rule in "${LSO_RUN_RULES_ACTIVATED[@]:-}"; do
         [[ -z "$rule" ]] && continue
         rules_html+="<li>${rule}</li>"

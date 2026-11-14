@@ -14,7 +14,7 @@ LSO_LOADED_PLUGINS=()
 
 load_plugin() {
     local plugin_path="$1"
-    local plugin_name
+    local plugin_name=""
     plugin_name=$(basename "$plugin_path" .sh)
 
     if [[ ! -f "$plugin_path" ]]; then

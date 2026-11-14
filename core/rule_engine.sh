@@ -88,12 +88,12 @@ evaluate_condition() {
             ;;
         browser_cache)
             local total_bytes=0
-            local cache_dir
+            local cache_dir=""
             for cache_dir in "$HOME/.cache/mozilla" "$HOME/.cache/google-chrome" \
                 "$HOME/.cache/chromium" "$HOME/.cache/BraveSoftware" \
                 "$HOME/.cache/opera" "$HOME/.cache/vivaldi"; do
                 if [[ -d "$cache_dir" ]]; then
-                    local dsize
+                    local dsize=""
                     dsize=$(du -sb "$cache_dir" 2>/dev/null | cut -f1)
                     total_bytes=$((total_bytes + ${dsize:-0}))
                 fi

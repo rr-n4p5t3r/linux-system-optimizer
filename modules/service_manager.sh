@@ -25,7 +25,7 @@ optimize_services() {
 
     # --- Mostrar servicios que fallaron ---
     print_step "Servicios con fallos..."
-    local failed
+    local failed=""
     failed=$(systemctl --failed --no-pager --no-legend 2>/dev/null | head -10 || true)
 
     if [[ -n "$failed" ]]; then
@@ -90,11 +90,11 @@ optimize_services() {
     # --- Tiempo de boot ---
     print_step "Analizando tiempo de inicio..."
     if command -v systemd-analyze &>/dev/null; then
-        local boot_time
+        local boot_time=""
         boot_time=$(systemd-analyze 2>/dev/null | head -1 || echo "No disponible")
         echo -e "  ${C_DIM}Boot:${C_RESET} ${C_CYAN}${boot_time}${C_RESET}"
 
-        local slow_services
+        local slow_services=""
         slow_services=$(systemd-analyze blame 2>/dev/null | head -5 || true)
         if [[ -n "$slow_services" ]]; then
             echo -e "  ${C_DIM}Servicios más lentos:${C_RESET}"

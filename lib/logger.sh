@@ -42,7 +42,7 @@ init_logger() {
 
 log_write() {
     local level="$1" msg="$2"
-    local timestamp
+    local timestamp=""
     timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[$timestamp] [$level] $msg" >> "$LSO_LOG_FILE" 2>/dev/null || true
 }

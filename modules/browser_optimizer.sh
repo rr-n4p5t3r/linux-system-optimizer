@@ -26,7 +26,7 @@ optimize_browsers() {
 
 optimize_firefox() {
     local browser="$1"
-    local profile_dir
+    local profile_dir=""
     profile_dir=$(find "$HOME/.mozilla/$browser" -maxdepth 1 -name "*.default*" -type d 2>/dev/null | head -1)
 
     if [[ -z "$profile_dir" ]]; then
@@ -58,7 +58,7 @@ FIREFOXEOF
 
 optimize_chromium() {
     local browser="$1"
-    local config_dir
+    local config_dir=""
 
     case "$browser" in
         google-chrome) config_dir="$HOME/.config/google-chrome" ;;

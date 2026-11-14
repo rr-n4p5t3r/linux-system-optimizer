@@ -22,7 +22,7 @@ setup_zram() {
 
     print_step "Configurando ZRAM..."
 
-    local ram_total_mb
+    local ram_total_mb=""
     ram_total_mb=$(free -m | awk '/^Mem:/{print $2}')
     local zram_percent="${LSO_ZRAM_SIZE_PERCENT:-50}"
     local zram_size_mb=$((ram_total_mb * zram_percent / 100))
@@ -33,11 +33,11 @@ setup_zram() {
     if [[ "$LSO_DRY_RUN" != "true" ]]; then
         # Crear dispositivo zram
         echo 1 > /sys/class/zram-control/hot_add 2>/dev/null || true
-        local zram_dev
+        local zram_dev=""
         zram_dev=$(ls /dev/zram* 2>/dev/null | tail -1)
 
         if [[ -n "$zram_dev" ]]; then
-            local zram_block
+            local zram_block=""
             zram_block=$(basename "$zram_dev")
             echo "${zram_size_mb}M" > "/sys/block/${zram_block}/disksize" 2>/dev/null
             mkswap "$zram_dev" &>/dev/null
