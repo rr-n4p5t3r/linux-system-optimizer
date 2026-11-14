@@ -78,6 +78,24 @@ chmod -R 755 "$INSTALL_DIR/distros"
 chmod -R 755 "$INSTALL_DIR/desktops"
 chmod -R 755 "$INSTALL_DIR/package_managers"
 
+echo "🛡️  Preparando excepciones de la auditoría (lso audit)..."
+WAIVERS_FILE="/etc/lso/audit-waivers.conf"
+if [[ ! -f "$WAIVERS_FILE" ]]; then
+    mkdir -p /etc/lso
+    cat > "$WAIVERS_FILE" << 'EOF_WAIVERS'
+# Excepciones de "lso audit": riesgos aceptados que no deben afectar el puntaje.
+# Una línea por revisión: ID  # motivo
+# La revisión sigue apareciendo en el informe como "exceptuada", con su motivo.
+#
+# Ejemplo:
+# NET-001   # Firewall perimetral dedicado. Ticket INF-1234
+EOF_WAIVERS
+    chmod 644 "$WAIVERS_FILE"
+    echo "✅ Archivo de excepciones creado en $WAIVERS_FILE"
+else
+    echo "✅ Se conserva el archivo de excepciones existente: $WAIVERS_FILE"
+fi
+
 echo "📖 Instalando página de manual..."
 MAN_DIR="/usr/local/share/man/man1"
 [[ -d "/usr/share/man/man1" ]] && MAN_DIR="/usr/share/man/man1"

@@ -71,6 +71,20 @@ for core in detector plugin_loader engine rule_engine dispatcher; do
 done
 
 # =============================================================================
+# AUDITORÍA (lso audit): salida limpia, sin banner ni mensajes de inicio
+# =============================================================================
+
+if [[ "${1:-}" == "audit" ]]; then
+    shift
+    LSO_LOG_FILE=/dev/null
+    run_full_detection >/dev/null 2>&1 || true
+    # shellcheck source=/dev/null
+    source "${LSO_BASE_DIR}/modules/audit/audit.sh"
+    audit_main "$@"
+    exit $?
+fi
+
+# =============================================================================
 # INICIALIZACIÓN
 # =============================================================================
 

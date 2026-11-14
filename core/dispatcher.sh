@@ -29,6 +29,8 @@ COMANDOS:
     plugins                  Listar plugins disponibles
     benchmark                Ejecutar benchmarks del sistema
     rules                    Evaluar el motor de reglas (config/rules/*.rules)
+    audit                    Auditoría de seguridad (solo lectura).
+                             Ver: lso audit --help
     help, -h                 Mostrar esta ayuda
     version, -v              Mostrar versión
 
@@ -47,6 +49,7 @@ EJEMPLOS:
     sudo lso module memory_optimizer
     sudo lso module package_optimizer --full
     sudo lso rules --dry-run
+    sudo lso audit --plain
     sudo lso -o laptop --dry-run
 
 AUTOR:
