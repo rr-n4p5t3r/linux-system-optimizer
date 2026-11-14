@@ -4,54 +4,131 @@ Todos los cambios notables de este proyecto serán documentados aquí.
 
 ## [1.0.0] - 2026-11-14
 
-Primera versión estable.
+Primera versión estable. Agrega `lso audit`, un módulo de auditoría de
+seguridad con tablero interactivo en la terminal, y cierra una revisión
+completa del código que corrigió problemas de seguridad y errores de
+funcionamiento en los módulos que modifican el sistema.
 
+### Por qué se pasa de 0.3.2-alpha a 1.0.0
 
-Agrega `lso audit`, un módulo de auditoría de seguridad de solo lectura con
-tablero interactivo en la terminal, inspirado en linaudit pero escrito desde
-cero en Bash, sin dependencias.
+LSO sigue [Versionado Semántico](https://semver.org/lang/es/). Las versiones
+`0.x-alpha` indican que nada es estable: comandos, opciones y formatos pueden
+cambiar sin aviso. El salto a `1.0.0` (en lugar de `0.4.0`) declara que el
+proyecto cumple las condiciones para dejar de ser alpha:
+
+- **Interfaz pública estable.** Desde esta versión se consideran estables los
+  comandos (`analyze`, `optimize`, `module`, `detect`, `restore`, `report`,
+  `plugins`, `benchmark`, `rules`, `version` y `audit`), sus opciones, los códigos de salida de `lso audit` (0 normal, 1 bajo
+  `--min-score`, 2 error de uso) y el esquema `v1` del informe JSON. Un
+  cambio incompatible en cualquiera de ellos exigirá una versión `2.0.0`.
+- **Sin fallas de seguridad conocidas.** La revisión encontró y corrigió
+  problemas graves para una herramienta que corre como root: logs y backups
+  en directorios escribibles por cualquier usuario (que permitían hacer que
+  root sobrescribiera archivos del sistema), un instalador con carpetas 777
+  y reglas capaces de cargar archivos fuera del proyecto. Ver *Seguridad*.
+- **Cambios al sistema seguros y reversibles.** Los módulos ya no reemplazan
+  archivos de configuración completos, hacen backup antes de editar y
+  `lso restore` devuelve cada backup a su ruta exacta.
+- **Pruebas automáticas.** Antes no había ninguna; ahora hay 149, sin
+  dependencias (`bash tests/run.sh`), que cubren la auditoría y las
+  correcciones del núcleo.
+- **Funcionalidad completa.** Con la auditoría, LSO cubre el ciclo completo
+  que se propuso: analizar, optimizar, restaurar y auditar.
 
 ### Añadido
-- **`lso audit`**: 101 revisiones en 9 categorías (accounts, ssh, network,
-  filesystem, hardening, persistence, patching, secrets, apps). Catálogo en
-  `docs/audit-checks.md`. Ninguna revisión modifica el sistema; cada hallazgo
-  trae la corrección sugerida.
-- **Puntaje de 1 a 10** con topes por hallazgos graves y por cobertura (si se
-  evaluó menos del 90 %, como al correr sin root). El informe explica el tope.
-- **Tablero interactivo** (Resumen, Hallazgos, Categorías) en Bash puro:
-  anillo de puntaje, barras por gravedad y categoría, detalle por hallazgo,
-  filtros, búsqueda y copia de la corrección al portapapeles (OSC 52).
-- **Salidas** `--plain` (con `--all`) y `--json` (esquema v1), `--output`
-  con permisos 600 y `--min-score` para cron, CI o monitoreo.
-- **Perfiles** de escritorio, servidor y contenedor que ajustan la gravedad o
-  marcan "no aplica" sin ocultar revisiones; **excepciones** en
-  `/etc/lso/audit-waivers.conf` (el instalador crea un ejemplo).
-- `--fast` omite las revisiones que recorren el disco.
-- **Pruebas automáticas** sin dependencias: `bash tests/run.sh`.
+- **`lso audit`**: auditoría de seguridad de solo lectura, inspirada en
+  [linaudit](https://github.com/alexiarstein/linaudit) pero escrita desde
+  cero en Bash, sin dependencias.
+  - **101 revisiones** en 9 categorías: cuentas, SSH, red, sistema de
+    archivos, endurecimiento, persistencia, actualizaciones, credenciales
+    expuestas y servicios. Catálogo en `docs/audit-checks.md`. Ninguna
+    revisión modifica el sistema; cada hallazgo trae la corrección sugerida.
+  - **Puntaje de 1 a 10** con topes: un hallazgo crítico limita a 6/10, dos
+    a 4/10, tres o más a 3/10; uno a cuatro altos a 8/10 y cinco o más a
+    6/10; si se evaluó menos del 90 % (por ejemplo, sin root), a 6/10. El
+    informe explica qué tope se aplicó.
+  - **Tablero interactivo** (Resumen, Hallazgos, Categorías): anillo de
+    puntaje, barras por gravedad y por categoría, detalle de cada hallazgo,
+    filtros por estado, gravedad y categoría, búsqueda, copia de la
+    corrección al portapapeles (OSC 52) y redibujado al cambiar el tamaño de
+    la terminal. Requiere al menos 100×30; si no, usa texto.
+  - **Salidas**: `--plain` (con `--all` para incluir lo aprobado), `--json`
+    (esquema `v1`), `--output` (el archivo se crea con permisos 600) y
+    `--category` para limitar las revisiones.
+  - **`--min-score N`** devuelve código 1 si el puntaje queda por debajo de
+    N, para cron, CI o monitoreo.
+  - **`--fast`** omite las revisiones que recorren el disco.
+  - **Perfiles** de escritorio, servidor y contenedor (se detectan solos o
+    con `--profile`): ajustan la gravedad o marcan "no aplica" sin ocultar
+    revisiones.
+  - **Excepciones** en `/etc/lso/audit-waivers.conf` (`ID  # motivo`): siguen
+    apareciendo en el informe con su motivo, pero no restan puntaje. El
+    instalador crea el archivo con un ejemplo.
+  - Los secretos encontrados nunca se muestran: solo el archivo y la línea.
+  - Un solo recorrido del disco compartido por todas las revisiones: la
+    auditoría completa tarda unos 15 s (la primera versión tardaba 237 s).
+- **Pruebas automáticas** (`tests/`): corredor propio sin dependencias, con
+  directorio temporal por prueba y detección de pruebas que abortan.
+- **Backups con ruta original**: cada backup guarda al lado un archivo
+  `.bak.path` con la ruta de la que salió.
 
 ### Seguridad
-- Logs y backups solo se escriben en directorios seguros (de root o del
-  usuario, sin escritura para otros). Antes se usaban directorios 777 y rutas
-  fijas en `/tmp`, lo que permitía ataques con enlaces simbólicos como root.
-- El instalador deja `logs/`, `backups/` y `reports/` como `root:root 755` y
-  ya no copia `.git`, pruebas ni documentos internos a `/opt`.
-- El motor de reglas rechaza acciones `optimize_*` con nombres fuera de
-  `[a-z0-9_]`, que permitían cargar archivos fuera del proyecto.
+- **Logs y backups solo en directorios seguros**: deben ser de root o del
+  usuario que corre LSO y no tener escritura para el grupo ni para otros.
+  Antes se usaban directorios 777 y rutas fijas en `/tmp`, lo que permitía
+  ataques con enlaces simbólicos: cualquier usuario del equipo podía lograr
+  que root escribiera sobre un archivo del sistema (por ejemplo
+  `/etc/shadow`) o que `lso restore` copiara a `/etc` un archivo preparado
+  por él.
+- **Instalador**: `logs/`, `backups/` y `reports/` quedan como
+  `root:root 755` (antes 777). Ya no copia a `/opt` el historial de git, las
+  pruebas, los documentos internos de desarrollo ni datos locales.
+- **Motor de reglas**: rechaza acciones `optimize_*` con nombres fuera de
+  `[a-z0-9_]`; antes una regla podía cargar archivos fuera del proyecto.
+- `benchmark.sh` usa archivos temporales creados con `mktemp` en lugar de
+  rutas fijas.
 
 ### Corregido
-- Fedora, RHEL, Rocky, AlmaLinux y Amazon Linux ya no sobrescriben
-  `/etc/dnf/dnf.conf`: hacen backup y cambian solo sus claves.
-- El optimizador de navegadores no daña el `Exec=` del acceso directo, no
-  repite los ajustes de Firefox y, con `sudo`, trabaja sobre el home del
-  usuario real. Lo mismo para la limpieza de caché, el autoarranque, el
-  escritorio y el entorno de desarrollo.
-- Los backups guardan su ruta original (`archivo.bak.path`) y `lso restore`
-  los devuelve al sitio exacto; el menú muestra la fecha y el destino.
-- `process_manager` ya no dice "zombies limpiados" tras un `kill -9` sin
-  efecto: muestra el proceso padre y le envía `SIGCHLD`, e informa cuántos
+- **Fedora, RHEL, Rocky Linux, AlmaLinux y Amazon Linux** ya no sobrescriben
+  `/etc/dnf/dnf.conf` completo y sin backup: hacen backup y cambian solo sus
+  claves, conservando el resto de la configuración del usuario.
+- **Navegadores**: el optimizador dañaba la línea `Exec=` del acceso
+  directo, repetía los ajustes de Firefox en cada ejecución y, con `sudo`,
+  trabajaba sobre `/root` en vez del usuario real. Ahora inserta las
+  opciones después del ejecutable, no duplica nada y devuelve los archivos
+  al usuario.
+- **Usuario real con `sudo`**: la limpieza de caché, el autoarranque, el
+  optimizador de escritorio y el entorno de desarrollo usaban el home de
+  root. Ahora usan el del usuario que ejecutó `sudo`.
+- **`lso restore`** devuelve cada backup a su ruta exacta (antes adivinaba
+  la ruta por el nombre y, por ejemplo, un backup de `sshd_config` no volvía
+  a `/etc/ssh`). El menú muestra la fecha (antes siempre decía "Fecha
+  desconocida") y el destino de cada backup, y busca en el mismo directorio
+  donde se guardan.
+- **Procesos zombie**: `process_manager` les hacía `kill -9`, que no tiene
+  efecto sobre un zombie, y aun así decía "limpiados". Ahora muestra el
+  proceso padre, le envía `SIGCHLD` para que lo recoja e informa cuántos
   quedan.
-- Cálculo de uso de CPU sin división por cero y lectura de memoria
-  independiente del idioma.
+- **Motor de reglas**: la lectura de memoria funciona con cualquier idioma
+  del sistema y el cálculo de uso de CPU ya no puede dividir por cero.
+
+### Cambiado
+- Cuando LSO corre **sin root**, sus logs y backups van a
+  `~/.local/state/lso/` en lugar del directorio de instalación.
+
+### Actualizar desde 0.3.x
+- Reinstala con `sudo ./install.sh` para corregir los permisos de las
+  instalaciones anteriores (directorios 777 y archivos que no son de root).
+- Los backups hechos con versiones anteriores no tienen archivo `.bak.path`:
+  `lso restore` los sigue buscando por nombre en `/etc`, `/usr/local/etc` y
+  `/opt`, como antes.
+- El desinstalador conserva `/etc/lso`, `/var/log/lso` y `/var/lib/lso`.
+
+### Limitaciones conocidas
+- FreeBSD sigue en soporte experimental; `lso audit` no lo soporta.
+- Los cambios para distros con `dnf` están cubiertos por pruebas
+  automáticas, pero aún no se han verificado en equipos reales con esas
+  distros.
 
 ## [0.3.2-alpha] - 2026-07-30
 

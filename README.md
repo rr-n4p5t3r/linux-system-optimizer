@@ -1,6 +1,27 @@
 # Linux System Optimizer (LSO)
 
-Framework modular y extensible para analizar, optimizar y mantener distribuciones GNU/Linux de forma segura.
+Framework modular y extensible para analizar, optimizar, auditar y mantener distribuciones GNU/Linux de forma segura.
+
+**Versión actual: 1.0.0** (estable) — ver [CHANGELOG.md](CHANGELOG.md).
+
+## Novedades de la 1.0.0
+
+- **`lso audit`**: auditoría de seguridad de solo lectura con 101 revisiones,
+  puntaje de 1 a 10 y tablero interactivo en la terminal.
+- **Revisión de seguridad completa**: logs y backups solo en directorios
+  seguros, instalador sin carpetas 777 y motor de reglas que no carga archivos
+  fuera del proyecto.
+- **Cambios reversibles**: los módulos editan solo las claves que necesitan
+  (sin reemplazar archivos completos), hacen backup antes y `lso restore`
+  devuelve cada archivo a su ruta exacta.
+- **Usuario real con `sudo`**: los ajustes de navegadores, caché, autoarranque
+  y escritorio se aplican en tu carpeta personal, no en la de root.
+- **149 pruebas automáticas** sin dependencias.
+
+Es la primera versión estable: los comandos, sus opciones, los códigos de
+salida de `lso audit` y el formato JSON del informe no cambiarán de forma
+incompatible dentro de la serie 1.x. El porqué del salto desde 0.3.2-alpha
+está explicado en el [CHANGELOG](CHANGELOG.md#100---2026-11-14).
 
 ## Autor
 
@@ -13,7 +34,7 @@ GitHub: [@rr-n4p5t3r](https://github.com/rr-n4p5t3r)
 - **23 distribuciones soportadas** (22 Linux + soporte experimental de FreeBSD — ver nota abajo)
 - **Perfiles de optimización** preconfigurados (desktop, laptop, gaming, workstation, server, dev, docker, database)
 - **Módulos independientes** que pueden ejecutarse por separado
-- **Backups automáticos** antes de cualquier cambio permanente
+- **Backups automáticos** antes de cualquier cambio permanente, con su ruta original para restaurarlos al sitio exacto
 - **Sistema de plugins** extensible
 - **Logs detallados** de todas las operaciones
 - **Restauración completa** de configuraciones
@@ -21,9 +42,10 @@ GitHub: [@rr-n4p5t3r](https://github.com/rr-n4p5t3r)
 
 ## Requisitos
 
-- Bash 4.0+
-- Privilegios de root (para módulos que modifican el sistema)
+- Bash 4.3+
+- Privilegios de root (para módulos que modifican el sistema y para una auditoría completa)
 - Dependencias: `awk`, `sed`, `grep`, `free`, `df`, `systemctl`
+- Para el tablero de `lso audit`: terminal UTF-8 de al menos 100×30
 
 ## Instalación
 
@@ -33,6 +55,30 @@ cd linux-system-optimizer
 chmod +x install.sh
 sudo ./install.sh
 ```
+
+El instalador copia solo lo necesario a `/opt/linux-system-optimizer`, crea el
+comando `lso` y la página de manual, y prepara `/etc/lso/audit-waivers.conf`.
+
+### Actualizar desde una versión anterior
+
+```bash
+cd linux-system-optimizer
+git pull
+sudo ./install.sh        # responde "s" para sobrescribir
+hash -r
+```
+
+Si vienes de 0.3.x, reinstala aunque no uses las novedades: corrige los
+permisos inseguros que dejaban las instalaciones anteriores.
+
+### Desinstalar
+
+```bash
+sudo ./uninstall.sh
+```
+
+Se conservan `/etc/lso`, `/var/log/lso` y `/var/lib/lso` por si quieres
+revisarlos o reinstalar.
 
 ## Uso
 
@@ -63,7 +109,25 @@ sudo lso detect
 
 # Simular optimización (sin aplicar cambios)
 sudo lso optimize --dry-run
+
+# Restaurar configuraciones desde los backups
+sudo lso restore
+
+# Auditar la seguridad del sistema
+sudo lso audit
 ```
+
+### Logs y backups
+
+| Quién ejecuta (instalado en `/opt`) | Logs | Backups |
+| --- | --- | --- |
+| root (`sudo`) | `/opt/linux-system-optimizer/logs` | `/opt/linux-system-optimizer/backups` |
+| usuario normal | `~/.local/state/lso/logs` | `~/.local/state/lso/backups` |
+
+LSO solo escribe en directorios que pertenecen a root o al usuario y que nadie
+más puede modificar. Si el directorio de instalación no cumple eso, usa
+`/var/log/lso` y `/var/lib/lso/backups`. Cada backup (`archivo.EPOCH.bak`)
+va acompañado de `archivo.EPOCH.bak.path` con la ruta original.
 
 Para la referencia completa de comandos, opciones, perfiles y el motor de reglas, consulta la página de manual (instalada por `install.sh`, o localmente con `man ./man/lso.1`):
 
@@ -87,7 +151,15 @@ sudo lso audit --plain               # informe en texto
 sudo lso audit --json --output informe.json
 sudo lso audit --fast                # omite las revisiones que recorren el disco
 sudo lso audit --min-score 7         # código 1 si el puntaje es menor (cron/CI)
+sudo lso audit --category ssh,network --profile server
 ```
+
+En el tablero: `↑↓` o `j`/`k` para moverte, `Tab` o `1`-`3` para cambiar de
+pestaña, `Enter` para ver el detalle, `a`/`s`/`c` para filtrar, `/` para
+buscar, `y` para copiar la corrección, `?` para la ayuda y `q` para salir.
+
+Códigos de salida: `0` normal, `1` puntaje por debajo de `--min-score`,
+`2` error de uso o sistema no soportado.
 
 - **101 revisiones** en 9 categorías: cuentas, SSH, red, sistema de archivos,
   endurecimiento, persistencia, actualizaciones, credenciales expuestas y
@@ -106,6 +178,10 @@ Inspirado en [linaudit](https://github.com/alexiarstein/linaudit); implementaci�
 propia en Bash, sin dependencias.
 
 ## Pruebas
+
+La suite no tiene dependencias externas: cada prueba corre en un bash aparte
+con su propio directorio temporal, y las rutas del sistema se simulan, así que
+no necesita root ni toca tu equipo.
 
 ```bash
 bash tests/run.sh            # toda la suite
