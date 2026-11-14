@@ -81,3 +81,37 @@ test_fs_count_is_16() {
     for id in "${AUDIT_IDS[@]}"; do [[ "${AUDIT_CAT[$id]}" == filesystem ]] && n=$((n + 1)); done
     assert_eq 16 "$n"
 }
+
+test_disk_scan_runs_once() {
+    local r
+    r=$(_tree good)
+    local count="$TMPDIR/scans"
+    : > "$count"
+    eval "_orig_find() $(declare -f audit_find | tail -n +2)"
+    audit_find() { echo x >> "$count"; _orig_find "$@"; }
+    _run "$r"
+    assert_eq 1 "$(wc -l < "$count")" "un solo recorrido para FS-005, FS-008 y FS-009"
+    rm -rf "$r"
+}
+
+test_unowned_files_detected() {
+    local r
+    r=$(_tree good)
+    # El árbol de prueba no tiene el UID real del usuario que corre las pruebas.
+    printf 'root:x:0:\n' > "$r/etc/group"
+    printf 'root:x:0:0::/root:/bin/bash\n' > "$r/etc/passwd"
+    _run "$r"
+    assert_eq FAIL "${AUDIT_STATUS[FS-009]}"
+    assert_contains "${AUDIT_DETAIL[FS-009]}" "/usr/bin/find"
+    rm -rf "$r"
+}
+
+test_owned_files_pass() {
+    local r
+    r=$(_tree good)
+    printf 'root:x:0:0::/root:/bin/bash\nyo:x:%s:%s::/home/yo:/bin/bash\n' "$(id -u)" "$(id -g)" > "$r/etc/passwd"
+    printf 'root:x:0:\nyo:x:%s:\n' "$(id -g)" > "$r/etc/group"
+    _run "$r"
+    assert_eq PASS "${AUDIT_STATUS[FS-009]}" "${AUDIT_DETAIL[FS-009]}"
+    rm -rf "$r"
+}

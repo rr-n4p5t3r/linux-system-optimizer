@@ -191,19 +191,45 @@ audit_short_list() {
 # Un solo recorrido del disco para todas las revisiones lentas. Cada línea:
 #   W <ruta>  directorio escribible por todos sin sticky bit
 #   S <ruta>  archivo con SUID
-#   U <ruta>  archivo o directorio sin dueño o sin grupo
+#   U <ruta>  archivo o directorio cuyo UID o GID no existe
+# Para los dueños no se usa -nouser/-nogroup: GNU find consulta la base de
+# usuarios archivo por archivo (≈45 s en 2,6 M de archivos). En su lugar find
+# imprime UID y GID numéricos y awk los compara con passwd y group.
 AUDIT_SCAN_ROOT="__none__"
 AUDIT_SCAN_DATA=""
 
-audit_disk_scan() {
-    if [[ "$AUDIT_SCAN_ROOT" != "${AUDIT_ROOT:-}" ]]; then
-        AUDIT_SCAN_DATA=$(audit_find \
-            \( -type d -perm -0002 ! -perm -1000 -printf 'W %p\n' \) , \
-            \( -type f -perm -4000 -printf 'S %p\n' \) , \
-            \( \( -nouser -o -nogroup \) -printf 'U %p\n' \))
-        AUDIT_SCAN_ROOT="${AUDIT_ROOT:-}"
+_audit_known_ids() {
+    if [[ -z "${AUDIT_ROOT:-}" ]] && audit_have getent; then
+        getent passwd | awk -F: '{print "u" $3}'
+        getent group  | awk -F: '{print "g" $3}'
+    else
+        awk -F: '{print "u" $3}' "$(audit_path /etc/passwd)" 2>/dev/null
+        awk -F: '{print "g" $3}' "$(audit_path /etc/group)" 2>/dev/null
     fi
-    # audit_disk_scan TIPO → rutas (sin prefijo AUDIT_ROOT) de ese tipo
+}
+
+# Debe llamarse fuera de $(...) para que el resultado quede en caché.
+audit_disk_scan_ensure() {
+    [[ "$AUDIT_SCAN_ROOT" == "${AUDIT_ROOT:-}" ]] && return 0
+    local ids
+    ids=$(_audit_known_ids | tr '\n' ' ')
+    AUDIT_SCAN_DATA=$(audit_find \
+        \( -type d -perm -0002 ! -perm -1000 -printf 'W %p\n' \) , \
+        \( -type f -perm -4000 -printf 'S %p\n' \) , \
+        -printf 'O %U %G %p\n' \
+        | awk -v ids="$ids" '
+            BEGIN { n = split(ids, a, " "); for (i = 1; i <= n; i++) ok[a[i]] = 1 }
+            /^O / {
+                if (!(("u" $2) in ok) || !(("g" $3) in ok))
+                    print "U " substr($0, length($2) + length($3) + 5)
+                next
+            }
+            { print }')
+    AUDIT_SCAN_ROOT="${AUDIT_ROOT:-}"
+}
+
+# audit_disk_lines TIPO → rutas (sin prefijo AUDIT_ROOT) de ese tipo
+audit_disk_lines() {
     local p
     while IFS= read -r p; do
         [[ "$p" == "$1 "* ]] && audit_rel "${p#"$1 "}" && echo

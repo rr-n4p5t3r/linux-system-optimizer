@@ -43,7 +43,8 @@ _chk_fs_004() {
 
 _chk_fs_005() {
     local list
-    list=$(audit_disk_scan W | audit_short_list 5)
+    audit_disk_scan_ensure
+    list=$(audit_disk_lines W | audit_short_list 5)
     if [[ -n "$list" ]]; then
         audit_fail "Directorios escribibles por todos sin sticky bit: $list"
     else
@@ -79,7 +80,8 @@ _FS_GTFO='^(find|vim?|vim\.[a-z]+|nano|less|more|awk|gawk|mawk|nawk|python[0-9.]
 
 _chk_fs_008() {
     local list
-    list=$(audit_disk_scan S | while read -r f; do
+    audit_disk_scan_ensure
+    list=$(audit_disk_lines S | while read -r f; do
         [[ "$(basename "$f")" =~ $_FS_GTFO ]] && echo "$f"
     done | audit_short_list 5)
     if [[ -n "$list" ]]; then
@@ -91,7 +93,8 @@ _chk_fs_008() {
 
 _chk_fs_009() {
     local list
-    list=$(audit_disk_scan U | audit_short_list 5)
+    audit_disk_scan_ensure
+    list=$(audit_disk_lines U | audit_short_list 5)
     if [[ -n "$list" ]]; then
         audit_fail "Archivos sin dueño o grupo: $list"
     else
