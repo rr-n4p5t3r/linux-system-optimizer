@@ -10,17 +10,20 @@
 # Se genera sin jq: todas las cadenas pasan por audit_json_escape.
 
 audit_json_escape() {
-    local s="$1" i c
+    local s="$1" i c hex
     s="${s//\\/\\\\}"
     s="${s//\"/\\\"}"
     s="${s//$'\n'/\\n}"
     s="${s//$'\t'/\\t}"
     s="${s//$'\r'/\\r}"
-    for i in {1..31}; do
-        (( i == 9 || i == 10 || i == 13 )) && continue
-        printf -v c '%b' "\\x$(printf '%02x' "$i")"
-        [[ "$s" == *"$c"* ]] && s="${s//"$c"/$(printf '\\u%04x' "$i")}"
-    done
+    # Solo se recorre la tabla de control si queda alguno (caso raro).
+    if [[ "$s" =~ [[:cntrl:]] ]]; then
+        for i in {1..31}; do
+            printf -v hex '%02x' "$i"
+            printf -v c '%b' "\\x$hex"
+            [[ "$s" == *"$c"* ]] && s="${s//"$c"/\\u00$hex}"
+        done
+    fi
     printf '%s' "$s"
 }
 

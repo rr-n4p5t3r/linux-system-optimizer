@@ -3,14 +3,16 @@
 # shellcheck disable=SC2034
 
 OPT="$LSO_BASE_DIR/optimizer.sh"
-_lso() { bash "$OPT" "$@" 2>/dev/null; }
+_lso() { bash "$OPT" "$@" --fast 2>/dev/null; }
 
 test_json_stdout_is_clean() {
     local out
     out=$(_lso audit --json)
     assert_eq "{" "${out:0:1}"
     if command -v jq >/dev/null; then
-        assert_eq "31" "$(jq '.checks|length' <<< "$out")"
+        local expected
+        expected=$(cat "$LSO_BASE_DIR"/modules/audit/checks/*.sh | grep -c '^audit_register ')
+        assert_eq "$expected" "$(jq '.checks|length' <<< "$out")"
     fi
 }
 

@@ -64,34 +64,20 @@ _chk_net_001() {
     fi
 }
 
-# _net_sysctl CLAVE VALORES_ACEPTADOS(separados por espacio)
-_net_sysctl() {
-    local key="$1" ok="$2" v
-    if ! v=$(audit_sysctl "$key") || [[ -z "$v" ]]; then
-        audit_skip "No se pudo leer $key"
-        return 0
-    fi
-    if [[ " $ok " == *" $v "* ]]; then
-        audit_pass "$key = $v"
-    else
-        audit_fail "$key = $v"
-    fi
-}
-
 _chk_net_002() {
     if audit_have docker; then
         audit_na "Docker requiere reenvío IPv4"
         return 0
     fi
-    _net_sysctl net.ipv4.ip_forward "0"
+    audit_check_sysctl net.ipv4.ip_forward "0"
 }
-_chk_net_003() { _net_sysctl net.ipv4.conf.all.accept_redirects "0"; }
-_chk_net_004() { _net_sysctl net.ipv4.conf.all.send_redirects "0"; }
-_chk_net_005() { _net_sysctl net.ipv4.conf.all.rp_filter "1 2"; }
-_chk_net_006() { _net_sysctl net.ipv4.tcp_syncookies "1"; }
-_chk_net_007() { _net_sysctl net.ipv4.conf.all.log_martians "1"; }
-_chk_net_008() { _net_sysctl net.ipv4.conf.all.accept_source_route "0"; }
-_chk_net_009() { _net_sysctl net.ipv4.icmp_echo_ignore_broadcasts "1"; }
+_chk_net_003() { audit_check_sysctl net.ipv4.conf.all.accept_redirects "0"; }
+_chk_net_004() { audit_check_sysctl net.ipv4.conf.all.send_redirects "0"; }
+_chk_net_005() { audit_check_sysctl net.ipv4.conf.all.rp_filter "1 2"; }
+_chk_net_006() { audit_check_sysctl net.ipv4.tcp_syncookies "1"; }
+_chk_net_007() { audit_check_sysctl net.ipv4.conf.all.log_martians "1"; }
+_chk_net_008() { audit_check_sysctl net.ipv4.conf.all.accept_source_route "0"; }
+_chk_net_009() { audit_check_sysctl net.ipv4.icmp_echo_ignore_broadcasts "1"; }
 
 # Imprime "proto dirección puerto" por cada socket en escucha.
 _net_listeners() {

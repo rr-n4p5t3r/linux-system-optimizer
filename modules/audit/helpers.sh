@@ -148,3 +148,63 @@ audit_user_homes() {
 
 # Ruta sin el prefijo AUDIT_ROOT, para mostrarla en los detalles.
 audit_rel() { local p="$1"; printf '%s' "${p#"${AUDIT_ROOT:-}"}"; }
+
+# audit_check_sysctl CLAVE "VALORES ACEPTADOS" → reporta PASS/FAIL/SKIP
+# (se usa dentro de una revisión).
+audit_check_sysctl() {
+    local key="$1" ok="$2" v
+    if ! v=$(audit_sysctl "$key") || [[ -z "$v" ]]; then
+        audit_skip "No se pudo leer $key"
+        return 0
+    fi
+    if [[ " $ok " == *" $v "* ]]; then
+        audit_pass "$key = $v"
+    else
+        audit_fail "$key = $v"
+    fi
+}
+
+# Puntos de montaje locales donde buscar archivos (siempre incluye "/").
+audit_local_mounts() {
+    {
+        echo /
+        awk '$3 ~ /^(ext[234]|xfs|btrfs|f2fs|jfs|reiserfs|zfs)$/ {print $2}' \
+            "$(audit_path /proc/mounts)" 2>/dev/null
+    } | sort -u
+}
+
+# audit_find ARGS… → find sobre cada montaje local (sin cruzar a otros)
+audit_find() {
+    local mp
+    while read -r mp; do
+        find "$(audit_path "$mp")" -xdev "$@" 2>/dev/null
+    done < <(audit_local_mounts)
+}
+
+# Lista de hasta N elementos separados por coma, con "…" si hay más.
+audit_short_list() {
+    local max="${1:-5}"
+    awk -v m="$max" 'NF {n++; if (n<=m) a = a (n>1 ? ", " : "") $0} END {if (n>m) a = a " … (" n " en total)"; print a}'
+}
+
+# Un solo recorrido del disco para todas las revisiones lentas. Cada línea:
+#   W <ruta>  directorio escribible por todos sin sticky bit
+#   S <ruta>  archivo con SUID
+#   U <ruta>  archivo o directorio sin dueño o sin grupo
+AUDIT_SCAN_ROOT="__none__"
+AUDIT_SCAN_DATA=""
+
+audit_disk_scan() {
+    if [[ "$AUDIT_SCAN_ROOT" != "${AUDIT_ROOT:-}" ]]; then
+        AUDIT_SCAN_DATA=$(audit_find \
+            \( -type d -perm -0002 ! -perm -1000 -printf 'W %p\n' \) , \
+            \( -type f -perm -4000 -printf 'S %p\n' \) , \
+            \( \( -nouser -o -nogroup \) -printf 'U %p\n' \))
+        AUDIT_SCAN_ROOT="${AUDIT_ROOT:-}"
+    fi
+    # audit_disk_scan TIPO → rutas (sin prefijo AUDIT_ROOT) de ese tipo
+    local p
+    while IFS= read -r p; do
+        [[ "$p" == "$1 "* ]] && audit_rel "${p#"$1 "}" && echo
+    done <<< "$AUDIT_SCAN_DATA"
+}
