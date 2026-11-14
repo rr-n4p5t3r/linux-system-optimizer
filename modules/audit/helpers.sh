@@ -208,3 +208,14 @@ audit_disk_scan() {
         [[ "$p" == "$1 "* ]] && audit_rel "${p#"$1 "}" && echo
     done <<< "$AUDIT_SCAN_DATA"
 }
+
+audit_cmd_systemctl_is_enabled() { systemctl is-enabled "$1" 2>/dev/null; }
+
+# Primer archivo legible de la lista (con prefijo AUDIT_ROOT), o return 1.
+audit_first_file() {
+    local p
+    for p in "$@"; do
+        [[ -r "$(audit_path "$p")" ]] && { printf '%s\n' "$p"; return 0; }
+    done
+    return 1
+}
