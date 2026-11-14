@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # Pruebas de las utilidades del núcleo (lib/, core/) corregidas para 1.0.0
 # shellcheck disable=SC2034
 
@@ -122,5 +123,18 @@ test_tune_dnf_conf_keeps_user_settings() {
     assert_contains "$c" "deltarpm=True"
     assert_contains "$c" "installonly_limit=3"
     assert_eq 1 "$(ls "$d"/backups/dnf.conf.*.bak 2>/dev/null | wc -l)" "deja backup antes de cambiar"
+    rm -rf "$d"
+}
+
+test_rule_action_rejects_path_traversal() {
+    local d
+    d=$(mktemp -d)
+    mkdir -p "$d/distros" "$d/modules"
+    printf 'echo PWNED > "%s/pwned"\n' "$d" > "$d/evil.sh"
+    source "$LSO_BASE_DIR/core/rule_engine.sh"
+    LSO_BASE_DIR="$d"   # distros/../evil.sh apunta a $d/evil.sh
+    run_module() { :; }
+    execute_rule_action "optimize_../evil" >/dev/null 2>&1
+    assert_eq "no" "$([[ -e "$d/pwned" ]] && echo si || echo no)" "no debe cargar archivos fuera de distros/desktops/modules"
     rm -rf "$d"
 }

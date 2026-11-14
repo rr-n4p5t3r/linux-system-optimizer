@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # =============================================================================
 # render_plain.sh — Informe de auditoría en texto (lso audit --plain)
 # =============================================================================

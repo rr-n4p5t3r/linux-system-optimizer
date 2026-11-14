@@ -70,12 +70,12 @@ clean_caches() {
     # --- Cachés de navegadores ---
     print_step "Limpiando cachés de navegadores..."
     local browser_cache_dirs=(
-        "$HOME/.cache/mozilla"
-        "$HOME/.cache/google-chrome"
-        "$HOME/.cache/chromium"
-        "$HOME/.cache/BraveSoftware"
-        "$HOME/.cache/opera"
-        "$HOME/.cache/vivaldi"
+        "$(lso_target_home)/.cache/mozilla"
+        "$(lso_target_home)/.cache/google-chrome"
+        "$(lso_target_home)/.cache/chromium"
+        "$(lso_target_home)/.cache/BraveSoftware"
+        "$(lso_target_home)/.cache/opera"
+        "$(lso_target_home)/.cache/vivaldi"
     )
 
     for cache_dir in "${browser_cache_dirs[@]}"; do
@@ -98,7 +98,8 @@ clean_caches() {
 
     # --- Caché de thumbnails ---
     print_step "Limpiando caché de miniaturas..."
-    local thumb_dir="$HOME/.cache/thumbnails"
+    local thumb_dir=""
+    thumb_dir="$(lso_target_home)/.cache/thumbnails"
     if [[ -d "$thumb_dir" ]]; then
         local thumb_before=""
         thumb_before=$(du -sb "$thumb_dir" 2>/dev/null | cut -f1 || echo "0")

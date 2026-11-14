@@ -28,8 +28,8 @@ optimize_desktop() {
     fi
 
     # Limpiar caché de iconos
-    if [[ -d "$HOME/.cache/icon-cache.kcache" ]]; then
-        rm -f "$HOME/.cache/icon-cache.kcache" 2>/dev/null || true
+    if [[ -f "$(lso_target_home)/.cache/icon-cache.kcache" ]]; then
+        rm -f "$(lso_target_home)/.cache/icon-cache.kcache" 2>/dev/null || true
     fi
 
     print_success "Escritorio optimizado"

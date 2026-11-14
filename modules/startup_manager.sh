@@ -13,7 +13,8 @@ LSO_STARTUP_OPTIONAL_APPS=(
 optimize_startup() {
     print_header "GESTIÓN DE APLICACIONES DE INICIO"
 
-    local autostart_dir="$HOME/.config/autostart"
+    local autostart_dir=""
+    autostart_dir="$(lso_target_home)/.config/autostart"
 
     if [[ ! -d "$autostart_dir" ]]; then
         print_info "No se encontró directorio de autoarranque: $autostart_dir"

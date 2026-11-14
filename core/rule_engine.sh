@@ -50,11 +50,11 @@ evaluate_condition() {
     local current_val=""
     case "$var" in
         ram_usage)
-            current_val=$(free | awk '/^Mem:/{printf "%.0f", $3/$2 * 100}')
+            current_val=$(LC_ALL=C free | awk '/^Mem:/{printf "%.0f", $3/$2 * 100}')
             ;;
         cpu_usage)
             current_val=$(awk '{print $1}' < /proc/loadavg)
-            current_val=$(awk "BEGIN {printf \"%.0f\", $current_val / $LSO_CPU_CORES * 100}")
+            current_val=$(awk -v l="$current_val" -v c="${LSO_CPU_CORES:-1}" 'BEGIN {if (c < 1) c = 1; printf "%.0f", l / c * 100}')
             ;;
         swap_usage)
             current_val=$(LC_ALL=C free | awk '/^Swap:/{if($2>0) printf "%.0f", $3/$2 * 100; else print 0}')
@@ -81,7 +81,7 @@ evaluate_condition() {
             [[ -d /sys/class/zram-control ]] && current_val="true" || current_val="false"
             ;;
         ram_total)
-            current_val=$(free -g | awk '/^Mem:/{print $2}')
+            current_val=$(LC_ALL=C free -g | awk '/^Mem:/{print $2}')
             ;;
         load_average)
             current_val=$(awk '{print $1}' < /proc/loadavg)
@@ -224,6 +224,12 @@ execute_rule_action() {
             ;;
         optimize_*)
             local target="${action#optimize_}"
+            # Solo nombres simples: evita cargar archivos fuera de modules/,
+            # distros/ o desktops/ (p. ej. "optimize_../../tmp/x").
+            if [[ ! "$target" =~ ^[a-z0-9_]+$ ]]; then
+                log_warn "Acción con nombre inválido: $action"
+                return 0
+            fi
             if [[ -f "${LSO_BASE_DIR}/modules/${target}_optimizer.sh" ]]; then
                 run_module "${target}_optimizer" 2>/dev/null || true
             elif [[ -f "${LSO_BASE_DIR}/distros/${target}.sh" ]]; then

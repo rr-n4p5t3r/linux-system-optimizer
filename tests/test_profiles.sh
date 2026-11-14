@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # Pruebas de perfiles y excepciones (profiles.sh, waivers.sh)
 # shellcheck disable=SC2034
 

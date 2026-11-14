@@ -52,7 +52,15 @@ if [[ -d "$INSTALL_DIR" ]]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cp -r "$SCRIPT_DIR" "$INSTALL_DIR"
+# Se copia solo lo necesario para ejecutar: nada de historial de git, pruebas,
+# documentos internos de desarrollo ni datos locales (logs, backups, reportes).
+mkdir -p "$INSTALL_DIR"
+tar -C "$SCRIPT_DIR" \
+    --exclude=./.git --exclude=./.github --exclude=./.superpowers \
+    --exclude=./.gitignore --exclude=./.gitattributes \
+    --exclude=./tests --exclude=./docs/superpowers --exclude=./docs/DEPLOY_KEY.md \
+    --exclude=./logs --exclude=./backups --exclude=./reports \
+    -cf - . | tar -C "$INSTALL_DIR" -xf -
 
 if [[ -L "$BIN_LINK" ]]; then
     rm -f "$BIN_LINK"
@@ -62,9 +70,13 @@ ln -sf "$INSTALL_DIR/optimizer.sh" "$BIN_LINK"
 echo "🔧 Ajustando permisos..."
 find "$INSTALL_DIR" -name "*.sh" -exec chmod +x {} \;
 
+# Solo root escribe aquí. Nunca 777: LSO corre como root y un directorio
+# escribible por todos permitiría ataques con enlaces simbólicos. Cuando LSO
+# corre sin root usa ~/.local/state/lso.
 for dir in logs backups reports; do
     mkdir -p "$INSTALL_DIR/$dir"
-    chmod 777 "$INSTALL_DIR/$dir"
+    chown root:root "$INSTALL_DIR/$dir"
+    chmod 755 "$INSTALL_DIR/$dir"
 done
 
 mkdir -p "$INSTALL_DIR/plugins"

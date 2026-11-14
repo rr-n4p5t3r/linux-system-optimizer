@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # =============================================================================
 # audit.sh — Punto de entrada de "lso audit" (auditoría de seguridad)
 # =============================================================================

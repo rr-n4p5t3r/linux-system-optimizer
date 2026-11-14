@@ -87,7 +87,7 @@ optimize_dev_environment() {
         fi
     done
 
-    if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
+    if [[ -s "$(lso_target_home)/.nvm/nvm.sh" ]]; then
         echo -e "  ${C_CYAN}•${C_RESET} nvm"
         tool_found=true
     fi

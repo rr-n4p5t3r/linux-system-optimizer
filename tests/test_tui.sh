@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # Pruebas del tablero interactivo (render_tui.sh), sin terminal real:
 # se construye el cuadro en memoria y se verifican medidas y contenido.
 # shellcheck disable=SC2034

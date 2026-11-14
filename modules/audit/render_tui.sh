@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # =============================================================================
 # render_tui.sh — Tablero interactivo de la auditoría (lso audit)
 # =============================================================================
@@ -71,14 +72,14 @@ _tui_len() {
 
 # _tui_fit VAR TEXTO ANCHO → texto plano recortado con "…" o rellenado
 _tui_fit() {
-    local -n _out="$1"
+    local -n _fo="$1"
     local __t="$2" __w="$3"
-    if (( __w <= 0 )); then _out=""; return; fi
+    if (( __w <= 0 )); then _fo=""; return; fi
     if (( ${#__t} > __w )); then
-        _out="${__t:0:__w-1}…"
+        _fo="${__t:0:__w-1}…"
     else
-        _out="$__t"
-        while (( ${#_out} < __w )); do _out+=" "; done
+        _fo="$__t"
+        while (( ${#_fo} < __w )); do _fo+=" "; done
     fi
 }
 

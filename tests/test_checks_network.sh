@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # Pruebas de las revisiones de red (modules/audit/checks/network.sh)
 # shellcheck disable=SC2034
 

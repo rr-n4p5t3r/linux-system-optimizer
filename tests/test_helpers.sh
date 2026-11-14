@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # Pruebas de los ayudantes de lectura (modules/audit/helpers.sh)
 # shellcheck disable=SC2034
 

@@ -21,12 +21,14 @@ run_benchmarks() {
     echo -e "  ${C_DIM}Tiempo CPU:${C_RESET} ${C_CYAN}${cpu_time}${C_RESET}"
 
     print_step "Benchmark de RAM (escritura/lectura)..."
-    local ram_test_file="/tmp/lso_ram_test_$$"
+    local ram_test_file=""
+    ram_test_file=$(mktemp "${TMPDIR:-/tmp}/lso_ram_test.XXXXXX") || return 1
     dd if=/dev/zero of="$ram_test_file" bs=1M count=100 2>&1 | grep -E "copied|MB/s" |         sed 's/^/  /' | while read line; do echo -e "${C_CYAN}$line${C_RESET}"; done
     rm -f "$ram_test_file"
 
     print_step "Benchmark de disco (escritura secuencial)..."
-    local disk_test_file="/tmp/lso_disk_test_$$"
+    local disk_test_file=""
+    disk_test_file=$(mktemp "${TMPDIR:-/tmp}/lso_disk_test.XXXXXX") || return 1
     dd if=/dev/zero of="$disk_test_file" bs=1M count=100 oflag=direct 2>&1 | grep -E "copied|MB/s" |         sed 's/^/  /' | while read line; do echo -e "${C_CYAN}$line${C_RESET}"; done
     rm -f "$disk_test_file"
 

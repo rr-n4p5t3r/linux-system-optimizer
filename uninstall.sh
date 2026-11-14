@@ -39,6 +39,11 @@ echo "   • Backups en $INSTALL_DIR/backups"
 echo "   • Logs en $INSTALL_DIR/logs"
 echo "   • Reportes en $INSTALL_DIR/reports"
 echo
+echo "   Se conservan (bórralos a mano si ya no los necesitas):"
+echo "   • /etc/lso (excepciones de lso audit)"
+echo "   • /var/log/lso y /var/lib/lso (logs y backups cuando el directorio de"
+echo "     instalación no era seguro)"
+echo
 
 read -rp "¿Deseas continuar? [s/N]: " response
 if [[ ! "$response" =~ ^[Ss]$ ]]; then

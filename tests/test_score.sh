@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # Pruebas del puntaje (modules/audit/score.sh)
 # shellcheck disable=SC2034
 

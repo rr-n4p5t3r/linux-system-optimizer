@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # Pruebas de las revisiones de sistema de archivos (checks/filesystem.sh)
 # shellcheck disable=SC2034
 
@@ -9,7 +10,8 @@ source "$LSO_BASE_DIR/modules/audit/checks/filesystem.sh"
 audit_owner_uid() { echo 0; }
 
 _tree() { # _tree good|bad
-    local r="$(mktemp -d)" k
+    local r k
+    r="$(mktemp -d)"
     mkdir -p "$r/proc/sys/fs" "$r/etc/cron.d" "$r/home/ana" "$r/data/pub" "$r/usr/bin"
     printf 'root:x:0:0::/root:/bin/bash\nana:x:1000:1000::/home/ana:/bin/bash\n' > "$r/etc/passwd"
     printf 'x\n' > "$r/etc/group"; printf 'x\n' > "$r/etc/gshadow"; printf 'x\n' > "$r/etc/crontab"

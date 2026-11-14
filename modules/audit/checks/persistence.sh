@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154  # variables y arreglos definidos en otros archivos del módulo
 # =============================================================================
 # persistence.sh — Revisiones de auditoría: mecanismos de persistencia
 # =============================================================================
