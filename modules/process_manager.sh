@@ -37,20 +37,33 @@ optimize_processes() {
     # --- Verificar procesos zombie ---
     print_step "Verificando procesos zombie..."
     local zombies=""
-    zombies=$(ps aux 2>/dev/null | awk '$8 ~ /^Z/ {print $2, $11}' || true)
+    # Un zombie ya terminó: no se puede matar (kill -9 no tiene efecto). Solo
+    # desaparece cuando su proceso padre lo recoge, o cuando el padre termina.
+    zombies=$(ps -eo pid=,ppid=,stat=,comm= 2>/dev/null | awk '$3 ~ /^Z/ {print $1, $2, $4}' || true)
 
     if [[ -n "$zombies" ]]; then
         echo -e "  ${C_YELLOW}Procesos zombie detectados:${C_RESET}"
-        echo "$zombies" | while read pid cmd; do
-            echo -e "    ${C_RED}PID $pid: $cmd${C_RESET}"
-        done
+        local pid ppid cmd pcmd
+        while read -r pid ppid cmd; do
+            pcmd=$(ps -o comm= -p "$ppid" 2>/dev/null)
+            echo -e "    ${C_RED}PID $pid ($cmd) — padre: PID $ppid (${pcmd:-?})${C_RESET}"
+        done <<< "$zombies"
 
         if [[ "$LSO_DRY_RUN" != "true" ]]; then
-            if confirm "¿Deseas intentar limpiar procesos zombie?"; then
-                echo "$zombies" | while read pid _; do
-                    kill -9 "$pid" 2>/dev/null || true
+            if confirm "¿Avisar a los procesos padre (SIGCHLD) para que recojan sus zombies?"; then
+                local parents
+                parents=$(awk '{print $2}' <<< "$zombies" | sort -u)
+                for ppid in $parents; do
+                    [[ "$ppid" -gt 1 ]] && kill -CHLD "$ppid" 2>/dev/null || true
                 done
-                log_success "Procesos zombie limpiados"
+                sleep 1
+                local left
+                left=$(ps -eo stat= 2>/dev/null | awk '$1 ~ /^Z/ {n++} END {print n+0}')
+                if [[ "${left:-0}" -eq 0 ]]; then
+                    log_success "Los procesos padre recogieron sus zombies"
+                else
+                    log_warn "Quedan ${left} zombies: se irán cuando su proceso padre termine o se reinicie"
+                fi
             fi
         fi
     else

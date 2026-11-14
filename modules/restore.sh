@@ -6,7 +6,9 @@
 restore_system() {
     print_header "RESTAURACIÓN DE CONFIGURACIONES"
 
-    local backup_dir="${LSO_BASE_DIR}/backups"
+    # El mismo directorio que eligió backup_file (el del proyecto o el de estado).
+    local backup_dir=""
+    backup_dir=$(lso_pick_dir "${LSO_BASE_DIR}/backups" backups 2>/dev/null) || backup_dir="${LSO_BASE_DIR}/backups"
 
     if [[ ! -d "$backup_dir" ]] || [[ -z "$(ls -A "$backup_dir" 2>/dev/null)" ]]; then
         print_warn "No hay backups disponibles"
@@ -25,9 +27,14 @@ restore_system() {
         local size=""
         size=$(du -sh "$backup" 2>/dev/null | cut -f1)
         local date_str=""
-        date_str=$(date -d "@${filename##*.}" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo "Fecha desconocida")
+        local epoch=""
+        epoch=$(lso_backup_epoch "$backup")
+        date_str="Fecha desconocida"
+        [[ -n "$epoch" ]] && date_str=$(date -d "@$epoch" '+%Y-%m-%d %H:%M:%S' 2>/dev/null)
+        local dest="ruta original desconocida"
+        [[ -f "$backup.path" ]] && dest=$(head -1 "$backup.path")
 
-        echo -e "  ${C_CYAN}${i}.${C_RESET} ${filename} (${size}) — ${date_str}"
+        echo -e "  ${C_CYAN}${i}.${C_RESET} ${filename} (${size}) — ${date_str} → ${dest}"
         backups+=("$backup")
         ((i++))
     done
@@ -58,7 +65,7 @@ restore_system() {
             ;;
         a|A)
             if confirm "${C_RED}¿Eliminar TODOS los backups? Esta acción no se puede deshacer.${C_RESET}"; then
-                rm -f "$backup_dir"/*.bak
+                rm -f "$backup_dir"/*.bak "$backup_dir"/*.bak.path
                 print_success "Backups eliminados"
             fi
             ;;

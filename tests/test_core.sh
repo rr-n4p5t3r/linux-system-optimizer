@@ -138,3 +138,23 @@ test_rule_action_rejects_path_traversal() {
     assert_eq "no" "$([[ -e "$d/pwned" ]] && echo si || echo no)" "no debe cargar archivos fuera de distros/desktops/modules"
     rm -rf "$d"
 }
+
+# --- Backups que recuerdan su ruta original ---
+
+test_backup_restores_to_original_path() {
+    local base f out
+    base=$(mktemp -d); mkdir -p "$base/backups" "$base/etc/ssh"; chmod 755 "$base/backups"
+    LSO_BASE_DIR="$base"
+    f="$base/etc/ssh/sshd_config"; echo original > "$f"
+    out=$(backup_file "$f" 2>/dev/null | tail -1)
+    assert_eq "$f" "$(cat "$out.path")" "el backup guarda la ruta original"
+    echo cambiado > "$f"
+    assert_status 0 restore_file "$out"
+    assert_eq "original" "$(cat "$f")"
+    rm -rf "$base"
+}
+
+test_backup_timestamp_from_name() {
+    assert_eq 1700000000 "$(lso_backup_epoch /x/sshd_config.1700000000.bak)"
+    assert_eq "" "$(lso_backup_epoch /x/raro.bak)"
+}

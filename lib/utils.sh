@@ -107,6 +107,8 @@ backup_file() {
             log_warn "No se pudo crear backup de: $file"
             return 1
         }
+        # La ruta original se guarda al lado para restaurar al sitio exacto.
+        readlink -f "$file" > "${backup_path}.path" 2>/dev/null || true
         log_info "Backup creado: $backup_path"
         echo "$backup_path"
     else
@@ -123,17 +125,17 @@ restore_file() {
         return 1
     fi
 
-    local filename=""
-    filename=$(basename "$backup_path")
-    local original_name=""
-    original_name=$(echo "$filename" | sed 's/\.[0-9]*\.bak$//')
-
-    local target_path=""
-    if [[ -f "/etc/$original_name" ]]; then
-        target_path="/etc/$original_name"
-    elif [[ -f "/usr/$original_name" ]]; then
-        target_path="/usr/$original_name"
+    local target_path="" original_name=""
+    if [[ -f "${backup_path}.path" ]]; then
+        target_path=$(head -1 "${backup_path}.path")
+        if [[ "$target_path" != /* ]]; then
+            log_error "Ruta original inválida en ${backup_path}.path"
+            return 1
+        fi
     else
+        # Backups anteriores a 1.0.0 no guardaban la ruta: se busca por nombre.
+        original_name=$(basename "$backup_path" | sed 's/\.[0-9]*\.bak$//')
+        local dir
         for dir in /etc /usr/local/etc /opt; do
             if [[ -f "$dir/$original_name" ]]; then
                 target_path="$dir/$original_name"
@@ -154,6 +156,15 @@ restore_file() {
     }
 
     log_success "Restaurado: $backup_path -> $target_path"
+}
+
+# lso_backup_epoch RUTA → segundos epoch del nombre "archivo.EPOCH.bak" (o vacío)
+lso_backup_epoch() {
+    local n="${1##*/}"
+    n="${n%.bak}"
+    n="${n##*.}"
+    [[ "$n" =~ ^[0-9]+$ ]] && printf '%s\n' "$n"
+    return 0
 }
 
 human_size() {
