@@ -25,13 +25,26 @@ for file in "$TESTS_DIR"/test_*.sh; do
     for fn in "${funcs[@]}"; do
         total=$((total + 1))
         rc=0
-        bash -c '
+        # Cada prueba usa su propio TMPDIR, que se borra al terminar.
+        test_tmp=$(mktemp -d)
+        TMPDIR="$test_tmp" bash -c '
             set -u
             source "$TESTS_DIR/lib.sh"
             source "$1"
-            "$2"
+            # Si la prueba aborta (p. ej. una variable sin asignar con set -u),
+            # bash abandona la función y sigue en el nivel superior: el
+            # indicador solo queda en 1 si la prueba llegó hasta el final.
+            _done=0
+            _wrap() { "$1"; _done=1; }
+            _wrap "$2"
+            if [[ $_done -ne 1 ]]; then
+                echo "    ✗ la prueba terminó de forma inesperada" >&2
+                exit 99
+            fi
             exit "$TEST_FAILS"
         ' _ "$file" "$fn" || rc=$?
+        chmod -R u+rwX "$test_tmp" 2>/dev/null
+        rm -rf "$test_tmp"
         if [[ $rc -eq 0 ]]; then
             echo "  PASS $fn"
         elif [[ $rc -eq 77 ]]; then
