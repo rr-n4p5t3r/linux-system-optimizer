@@ -73,3 +73,17 @@ test_help_lists_audit() {
     assert_contains "$(_lso help)" "audit"
     assert_contains "$(_lso audit --help)" "--plain"
 }
+
+test_min_score_exit_codes() {
+    local score
+    score=$(bash "$OPT" audit --json --fast 2>/dev/null | grep -o '"value": [0-9]*' | head -1 | grep -o '[0-9]*$')
+    assert_status 0 bash "$OPT" audit --json --fast --min-score "$score"
+    if (( score < 10 )); then
+        assert_status 1 bash "$OPT" audit --json --fast --min-score $((score + 1))
+    fi
+}
+
+test_min_score_invalid() {
+    assert_status 2 bash "$OPT" audit --min-score 11
+    assert_status 2 bash "$OPT" audit --min-score abc
+}

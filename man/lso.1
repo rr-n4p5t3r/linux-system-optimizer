@@ -59,6 +59,11 @@ Evalúa el motor de reglas condicionales (\fIconfig/rules/*.rules\fR) de forma
 aislada, sin correr un perfil completo. Útil para probar reglas nuevas con
 \fB\-\-dry\-run\fR.
 .TP
+.B audit
+Auditoría de seguridad de solo lectura: 101 revisiones en 9 categorías,
+puntaje de 1 a 10 y la corrección sugerida de cada hallazgo. Sin opciones
+abre un tablero interactivo. Ver la sección \fBAUDITORÍA\fR.
+.TP
 .BR help ", " \-h
 Muestra la ayuda de uso.
 .TP
@@ -214,6 +219,49 @@ todavía.
 Si generas el reporte de forma aislada (\fBlso module report\fR sin un
 \fBoptimize\fR/\fBanalyze\fR previo en el mismo proceso), las secciones que
 dependen de esos módulos se muestran como no disponibles en vez de fallar.
+.SH AUDITORÍA
+\fBlso audit\fR revisa el sistema sin modificar nada y califica de 1 a 10.
+Cada hallazgo muestra el comando o ajuste que lo corrige; aplicarlo queda a
+tu criterio. Corre con \fBsudo\fR para evaluar todo: sin root, lo que
+requiere permisos queda como "no evaluable" y el puntaje tiene un tope de 6.
+.PP
+Categorías: \fBaccounts\fR, \fBssh\fR, \fBnetwork\fR, \fBfilesystem\fR,
+\fBhardening\fR, \fBpersistence\fR, \fBpatching\fR, \fBsecrets\fR y
+\fBapps\fR. El catálogo completo, con el ID de cada revisión, está en
+\fIdocs/audit\-checks.md\fR.
+.TP
+.B Puntaje
+Cada revisión pesa según su gravedad (crítico 10, alto 6, medio 3, bajo 1,
+info 0). Una aprobada suma su peso, una advertencia la mitad y una falla
+nada. Luego se aplican topes: con un hallazgo crítico abierto el puntaje no
+pasa de 6 (con dos, de 4; con tres o más, de 3); con 1 a 4 altos, de 8; con
+5 o más altos, de 6; y si se evaluó menos del 90 % de lo aplicable, de 6.
+.TP
+.B Perfiles
+Según el equipo, algunas revisiones cambian de gravedad o no aplican:
+\fBdesktop\fR/\fBlaptop\fR relajan las propias de servidores corporativos
+y los contenedores omiten lo que gestiona el host. Se detecta solo; se puede
+forzar con \fB\-\-profile\fR. Un perfil nunca oculta una revisión.
+.TP
+.I /etc/lso/audit\-waivers.conf
+Excepciones (riesgos aceptados), una por línea: \fIID  # motivo\fR. La
+revisión sigue apareciendo como "exceptuada" pero no afecta el puntaje.
+.TP
+.B Opciones
+\fB\-\-plain\fR [\fB\-\-all\fR], \fB\-\-json\fR, \fB\-\-output\fR
+\fIarchivo\fR (permisos 600), \fB\-\-category\fR \fIcat\fR[,\fIcat\fR],
+\fB\-\-profile\fR \fIperfil\fR, \fB\-\-waivers\fR \fIarchivo\fR,
+\fB\-\-fast\fR (omite las revisiones que recorren el disco),
+\fB\-\-min\-score\fR \fIN\fR (código 1 si el puntaje es menor) y
+\fB\-\-no\-color\fR. Detalle en \fBlso audit \-\-help\fR.
+.TP
+.B Tablero
+Pestañas Resumen, Hallazgos y Categorías. Teclas: flechas o \fBj\fR/\fBk\fR
+para moverse, \fBTab\fR o \fB1\fR\-\fB3\fR para cambiar de pestaña,
+\fBEnter\fR para ver el detalle, \fBa\fR abiertos/todos, \fBs\fR filtrar por
+gravedad, \fBc\fR por categoría, \fB/\fR buscar, \fBy\fR copiar la
+corrección, \fB?\fR ayuda y \fBq\fR salir. Requiere una terminal UTF\-8 de al
+menos 100×30; si no, se usa el informe en texto.
 .SH LIMITACIONES CONOCIDAS
 .TP
 .B FreeBSD (soporte experimental)

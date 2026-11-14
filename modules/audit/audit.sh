@@ -37,6 +37,8 @@ OPCIONES:
                           laptop, gaming, dev, workstation
     --waivers ARCHIVO     Excepciones (por defecto /etc/lso/audit-waivers.conf)
     --fast                Omite las revisiones lentas (recorren el disco)
+    --min-score N         Sale con código 1 si el puntaje es menor que N (1-10);
+                          útil en cron, CI o monitoreo
     --no-color            Sin colores
     -h, --help            Muestra esta ayuda
 
@@ -47,6 +49,12 @@ EJEMPLOS:
     sudo lso audit --plain
     sudo lso audit --json --output informe.json
     sudo lso audit --profile server --category ssh,network
+    sudo lso audit --json --output /var/lib/lso/audit.json --min-score 7
+
+CÓDIGOS DE SALIDA:
+    0  auditoría completa (y puntaje ≥ --min-score, si se pidió)
+    1  puntaje por debajo de --min-score, o error al escribir el informe
+    2  uso inválido
 EOF_HELP
 }
 
@@ -71,7 +79,7 @@ _audit_progress() {
 }
 
 audit_main() {
-    local mode="" all="" output="" categories="" profile="" fast=0 nocolor=0
+    local mode="" all="" output="" categories="" profile="" fast=0 nocolor=0 min_score=""
     local waivers="$AUDIT_DEFAULT_WAIVERS"
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -80,11 +88,12 @@ audit_main() {
             --json)  [[ "$mode" == plain ]] && { _audit_usage_error "--plain y --json no se pueden usar juntos"; return 2; }
                      mode=json ;;
             --all) all=all ;;
-            --output|--category|--profile|--waivers)
+            --output|--category|--profile|--waivers|--min-score)
                 [[ -n "${2:-}" ]] || { _audit_usage_error "$1 requiere un valor"; return 2; }
                 case "$1" in
                     --output) output="$2" ;; --category) categories="$2" ;;
                     --profile) profile="$2" ;; --waivers) waivers="$2" ;;
+                    --min-score) min_score="$2" ;;
                 esac
                 shift ;;
             --fast) fast=1 ;;
@@ -95,6 +104,11 @@ audit_main() {
         shift
     done
     AUDIT_FAST=$fast
+
+    if [[ -n "$min_score" ]] && ! [[ "$min_score" =~ ^([1-9]|10)$ ]]; then
+        _audit_usage_error "--min-score debe ser un número de 1 a 10"
+        return 2
+    fi
 
     if [[ "${LSO_DISTRO_ID:-}" == freebsd ]]; then
         echo "lso audit: FreeBSD todavía no está soportado." >&2
@@ -161,7 +175,8 @@ audit_main() {
         source "$AUDIT_DIR/render_tui.sh"
         if [[ -z "$output" ]] && tui_supported; then
             tui_run
-            return 0
+            _audit_min_score_check "$min_score"
+            return $?
         fi
         mode=plain
     fi
@@ -180,6 +195,16 @@ audit_main() {
         echo "Informe guardado en $output" >&2
     else
         printf '%s\n' "$report"
+    fi
+    _audit_min_score_check "$min_score"
+}
+
+# Código 1 si el puntaje queda por debajo del mínimo pedido (para cron/CI).
+_audit_min_score_check() {
+    [[ -z "$1" ]] && return 0
+    if (( AUDIT_SCORE < $1 )); then
+        echo "lso audit: puntaje ${AUDIT_SCORE}/10 por debajo del mínimo $1/10" >&2
+        return 1
     fi
     return 0
 }

@@ -2,6 +2,30 @@
 
 Todos los cambios notables de este proyecto serán documentados aquí.
 
+## [Sin publicar]
+
+Agrega `lso audit`, un módulo de auditoría de seguridad de solo lectura con
+tablero interactivo en la terminal, inspirado en linaudit pero escrito desde
+cero en Bash, sin dependencias.
+
+### Añadido
+- **`lso audit`**: 101 revisiones en 9 categorías (accounts, ssh, network,
+  filesystem, hardening, persistence, patching, secrets, apps). Catálogo en
+  `docs/audit-checks.md`. Ninguna revisión modifica el sistema; cada hallazgo
+  trae la corrección sugerida.
+- **Puntaje de 1 a 10** con topes por hallazgos graves y por cobertura (si se
+  evaluó menos del 90 %, como al correr sin root). El informe explica el tope.
+- **Tablero interactivo** (Resumen, Hallazgos, Categorías) en Bash puro:
+  anillo de puntaje, barras por gravedad y categoría, detalle por hallazgo,
+  filtros, búsqueda y copia de la corrección al portapapeles (OSC 52).
+- **Salidas** `--plain` (con `--all`) y `--json` (esquema v1), `--output`
+  con permisos 600 y `--min-score` para cron, CI o monitoreo.
+- **Perfiles** de escritorio, servidor y contenedor que ajustan la gravedad o
+  marcan "no aplica" sin ocultar revisiones; **excepciones** en
+  `/etc/lso/audit-waivers.conf` (el instalador crea un ejemplo).
+- `--fast` omite las revisiones que recorren el disco.
+- **Pruebas automáticas** sin dependencias: `bash tests/run.sh`.
+
 ## [0.3.2-alpha] - 2026-07-30
 
 Corrige un bug real reportado en producción: `lso optimize server` moría con
