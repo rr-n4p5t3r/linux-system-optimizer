@@ -89,3 +89,13 @@ test_redis_exposed_with_password_warns() {
     assert_eq WARN "${AUDIT_STATUS[APP-006]}"
     rm -rf "$r"
 }
+
+test_php_cli_ini_ignored() {
+    local r
+    r=$(_tree good)
+    mkdir -p "$r/etc/php/8.3/cli"; printf 'expose_php = On\n' > "$r/etc/php/8.3/cli/php.ini"
+    LISTEN=""
+    _run "$r"
+    assert_eq PASS "${AUDIT_STATUS[APP-010]}" "el php.ini de la CLI no se expone en la web"
+    rm -rf "$r"
+}

@@ -38,6 +38,7 @@ _audit_percent_of() { # obtenido posible → entero redondeado
 }
 
 audit_compute_score() {
+    local IFS=$' \t\n'   # no depender del IFS de quien llama
     declare -gA AUDIT_COUNT=(
         [critical]=0 [high]=0 [medium]=0 [low]=0
         [pass]=0 [warn]=0 [fail]=0 [skip]=0 [na]=0 [waived]=0
@@ -140,6 +141,7 @@ _audit_ids_of() {
 }
 
 audit_category_percent() {
+    local IFS=$' \t\n'
     local -a ids
     local obt pos
     mapfile -t ids < <(_audit_ids_of "$1")

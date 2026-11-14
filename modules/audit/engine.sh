@@ -60,12 +60,21 @@ audit_skip() { _audit_result SKIP "${1:-}"; }
 audit_na()   { _audit_result NA   "${1:-}"; }
 
 # audit_run_all [CSV_CATEGORIAS]
+# Si AUDIT_PROGRESS_CB tiene el nombre de una función, se llama antes de cada
+# revisión con: número total ID.
 audit_run_all() {
-    local filter="${1:-}" id
+    local filter="${1:-}" id n=0 total=0
+    local -a todo=()
     for id in "${AUDIT_IDS[@]}"; do
         if [[ -n "$filter" && ",${filter}," != *",${AUDIT_CAT[$id]},"* ]]; then
             continue
         fi
+        todo+=("$id")
+    done
+    total=${#todo[@]}
+    for id in "${todo[@]}"; do
+        n=$((n + 1))
+        [[ -n "${AUDIT_PROGRESS_CB:-}" ]] && "$AUDIT_PROGRESS_CB" "$n" "$total" "$id"
         unset "AUDIT_STATUS[$id]"
         AUDIT_DETAIL[$id]=""
         if [[ -n "${AUDIT_FORCE_NA[$id]:-}" ]]; then

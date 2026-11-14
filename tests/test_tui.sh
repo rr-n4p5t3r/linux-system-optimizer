@@ -153,3 +153,14 @@ test_eight_color_fallback() {
     _check_widths 110 32
     assert_not_contains "$(printf '%s' "${TUI_FRAME[@]}")" "38;5;"
 }
+
+test_percent_correct_with_newline_ifs() {
+    _setup
+    _build_with_nl_ifs() { local IFS=$'\n'; tui_build_frame 110 32; }
+    _build_with_nl_ifs
+    local all
+    all=$(printf '%s\n' "${TUI_FRAME[@]}" | sed 's/\x1b\[[0-9;]*m//g')
+    assert_contains "$all" "filesystem  "
+    assert_contains "$all" " 50 % ✖ 1" "filesystem tiene 1 de 2 revisiones bajas aprobadas a medias"
+    assert_not_contains "$all" "persistence ━━━━━━━━━━━━━━━━━━━━━━━ 100 %"
+}

@@ -23,7 +23,9 @@ _chk_hrd_001() {
     if [[ -r "$aa" && "$(tr -d '[:space:]' < "$aa")" == Y ]]; then
         local prof
         prof=$(audit_path /sys/kernel/security/apparmor/profiles)
-        if [[ -r "$prof" && ! -s "$prof" ]]; then
+        # Sin root el kernel muestra la lista de perfiles vacía: solo con
+        # root un archivo vacío significa de verdad "sin perfiles".
+        if [[ -r "$prof" && ! -s "$prof" ]] && audit_is_root; then
             audit_fail "AppArmor activo pero sin perfiles cargados"
         else
             audit_pass "AppArmor activo"

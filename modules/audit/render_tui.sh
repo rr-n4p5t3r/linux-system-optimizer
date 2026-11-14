@@ -786,11 +786,11 @@ _tui_size() {
 }
 
 _tui_draw() {
-    local out IFS=$'\n'
+    local out
     _tui_size
     tui_build_frame "$TUI_W" "$TUI_H"
     # Cada fila se termina con "borrar hasta el final" para no dejar restos.
-    out="${TUI_FRAME[*]}"
+    out=$(IFS=$'\n'; printf '%s' "${TUI_FRAME[*]}")
     printf '\033[H%s\033[J' "${out//$'\n'/$'\033[K\n'}" > /dev/tty
 }
 

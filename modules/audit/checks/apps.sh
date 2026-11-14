@@ -119,6 +119,7 @@ _chk_app_010() {
     local f bad=() n=0
     for f in "$(audit_path /etc/php.ini)" "$(audit_path /etc/php)"/*/*/php.ini; do
         [[ -r "$f" ]] || continue
+        [[ "$f" == */cli/php.ini ]] && continue   # la CLI no atiende peticiones web
         n=$((n + 1))
         grep -qiE '^[[:space:]]*expose_php[[:space:]]*=[[:space:]]*(off|0|false)' "$f" || bad+=("$(audit_rel "$f")")
     done

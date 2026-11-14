@@ -90,3 +90,12 @@ test_user_homes() {
     assert_eq "root /root|ana /home/ana" "$(audit_user_homes | paste -sd'|' -)"
     rm -rf "$r"
 }
+
+test_user_homes_skips_service_accounts() {
+    local r
+    r=$(mktemp -d); mkdir -p "$r/etc"
+    printf 'root:x:0:0::/root:/bin/bash\nlibvirt-qemu:x:64055:108::/var/lib/libvirt:/usr/sbin/nologin\nana:x:1000:1000::/home/ana:/bin/zsh\nsvc:x:1001:1001::/srv/svc:/bin/false\n' > "$r/etc/passwd"
+    AUDIT_ROOT="$r"
+    assert_eq "root /root|ana /home/ana" "$(audit_user_homes | paste -sd'|' -)"
+    rm -rf "$r"
+}

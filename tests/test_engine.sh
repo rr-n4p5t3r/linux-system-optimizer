@@ -89,3 +89,18 @@ test_fast_skips_slow_checks() {
     audit_run_all
     assert_eq "FAIL" "${AUDIT_STATUS[T-001]}"
 }
+
+PROGRESS=()
+_progress_cb() { PROGRESS+=("$1/$2 $3"); }
+
+test_progress_callback() {
+    audit_reset
+    PROGRESS=()
+    audit_register T-001 high demo "t" _pass_fn "fix"
+    audit_register T-002 high otra "t" _pass_fn "fix"
+    audit_register T-003 high demo "t" _pass_fn "fix"
+    AUDIT_PROGRESS_CB=_progress_cb
+    audit_run_all demo
+    AUDIT_PROGRESS_CB=""
+    assert_eq "1/2 T-001|2/2 T-003" "$(IFS='|'; echo "${PROGRESS[*]}")"
+}

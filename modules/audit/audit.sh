@@ -19,6 +19,9 @@ audit_usage() {
 USO:
     lso audit [opciones]
 
+Sin opciones de formato abre el tablero interactivo (terminal de al menos
+100×30 con UTF-8); si no es posible, muestra el informe en texto.
+
 Auditoría de seguridad de solo lectura: revisa el sistema, califica de 1 a 10
 y muestra cada hallazgo con su corrección sugerida. No cambia nada.
 
@@ -58,6 +61,13 @@ _audit_version() {
     [[ -r "${LSO_BASE_DIR:-}/VERSION" ]] && \
         v=$(awk -F': *' '/^Versi/ {print $2; exit}' "$LSO_BASE_DIR/VERSION")
     printf '%s' "${v:-desconocida}"
+}
+
+_audit_progress() {
+    local msg
+    msg="Auditando [$1/$2] $3 · ${AUDIT_TITLE[$3]}"
+    (( ${#msg} > 78 )) && msg="${msg:0:77}…"
+    printf '\r\033[K  %s' "$msg" >&2
 }
 
 audit_main() {
@@ -121,7 +131,13 @@ audit_main() {
     audit_load_waivers "$waivers"
     (( ${#AUDIT_WAIVER_UNKNOWN[@]} )) && \
         echo "Aviso: excepciones con ID desconocido en $waivers: ${AUDIT_WAIVER_UNKNOWN[*]}" >&2
+    # Progreso en stderr solo si es una terminal (no ensucia --json ni archivos).
+    if [[ -t 2 ]]; then
+        AUDIT_PROGRESS_CB=_audit_progress
+    fi
     audit_run_all "$categories"
+    [[ -n "${AUDIT_PROGRESS_CB:-}" ]] && printf '\r\033[K' >&2
+    AUDIT_PROGRESS_CB=""
     audit_compute_score
 
     AUDIT_VERSION=$(_audit_version)
@@ -139,7 +155,16 @@ audit_main() {
         AUDIT_COLOR=1
     fi
 
-    [[ -z "$mode" ]] && mode=plain  # el tablero interactivo llega en la fase 2
+    if [[ -z "$mode" ]]; then
+        # Sin formato explícito: tablero si la terminal lo permite; si no, texto.
+        # shellcheck source=/dev/null
+        source "$AUDIT_DIR/render_tui.sh"
+        if [[ -z "$output" ]] && tui_supported; then
+            tui_run
+            return 0
+        fi
+        mode=plain
+    fi
 
     local report
     if [[ "$mode" == json ]]; then

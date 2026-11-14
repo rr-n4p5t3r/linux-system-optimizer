@@ -116,3 +116,16 @@ test_coredump_systemd_storage_none() {
     assert_eq PASS "${AUDIT_STATUS[HRD-014]}"
     rm -rf "$r"
 }
+
+test_apparmor_profiles_hidden_without_root() {
+    local r
+    r=$(_good); ACTIVE="auditd systemd-timesyncd"; ENABLED_STATE="masked"
+    mkdir -p "$r/sys/kernel/security/apparmor"; : > "$r/sys/kernel/security/apparmor/profiles"
+    audit_is_root() { return 1; }
+    _run "$r"
+    assert_eq PASS "${AUDIT_STATUS[HRD-001]}" "sin root el archivo de perfiles se ve vacío"
+    audit_is_root() { return 0; }
+    _run "$r"
+    assert_eq FAIL "${AUDIT_STATUS[HRD-001]}" "con root, vacío significa sin perfiles"
+    rm -rf "$r"
+}

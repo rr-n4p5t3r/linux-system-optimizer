@@ -140,9 +140,10 @@ audit_service_active() {
     return 1
 }
 
-# audit_user_homes → "usuario home" para root y las cuentas humanas (UID 1000–65533)
+# audit_user_homes → "usuario home" para root y las cuentas humanas
+# (UID 1000–65533 con shell de login; se omiten cuentas de servicio).
 audit_user_homes() {
-    awk -F: '($3==0 || ($3>=1000 && $3<65534)) && $6!="" {print $1, $6}' \
+    awk -F: '$6!="" && ($3==0 || ($3>=1000 && $3<65534 && $7 !~ /(nologin|false)$/)) {print $1, $6}' \
         "$(audit_path /etc/passwd)" 2>/dev/null
 }
 
