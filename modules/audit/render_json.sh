@@ -18,7 +18,7 @@ audit_json_escape() {
     s="${s//$'\r'/\\r}"
     for i in {1..31}; do
         (( i == 9 || i == 10 || i == 13 )) && continue
-        printf -v c "\\x$(printf '%02x' "$i")"
+        printf -v c '%b' "\\x$(printf '%02x' "$i")"
         [[ "$s" == *"$c"* ]] && s="${s//"$c"/$(printf '\\u%04x' "$i")}"
     done
     printf '%s' "$s"
