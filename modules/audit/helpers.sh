@@ -116,3 +116,35 @@ audit_sshd_value() {
     done < <(_audit_sshd_emit "$(audit_path /etc/ssh/sshd_config)")
     printf '%s\n' "$def"
 }
+
+# --- Montajes, servicios y usuarios ------------------------------------------
+
+# audit_mount_opts PUNTO → opciones del montaje (return 1 si no es un montaje propio)
+audit_mount_opts() {
+    local opts
+    opts=$(awk -v mp="$1" '$2==mp {o=$4} END {if (o!="") print o}' "$(audit_path /proc/mounts)" 2>/dev/null)
+    [[ -n "$opts" ]] || return 1
+    printf '%s\n' "$opts"
+}
+
+audit_cmd_systemctl_is_active() { systemctl is-active --quiet "$1" 2>/dev/null; }
+
+# audit_service_active SERVICIO… → 0 si alguno está activo, 1 si ninguno,
+# 2 si no se puede saber (sin systemctl).
+audit_service_active() {
+    audit_have systemctl || return 2
+    local s
+    for s in "$@"; do
+        audit_cmd_systemctl_is_active "$s" && return 0
+    done
+    return 1
+}
+
+# audit_user_homes → "usuario home" para root y las cuentas humanas (UID 1000–65533)
+audit_user_homes() {
+    awk -F: '($3==0 || ($3>=1000 && $3<65534)) && $6!="" {print $1, $6}' \
+        "$(audit_path /etc/passwd)" 2>/dev/null
+}
+
+# Ruta sin el prefijo AUDIT_ROOT, para mostrarla en los detalles.
+audit_rel() { local p="$1"; printf '%s' "${p#"${AUDIT_ROOT:-}"}"; }
