@@ -79,25 +79,14 @@ _chk_net_007() { audit_check_sysctl net.ipv4.conf.all.log_martians "1"; }
 _chk_net_008() { audit_check_sysctl net.ipv4.conf.all.accept_source_route "0"; }
 _chk_net_009() { audit_check_sysctl net.ipv4.icmp_echo_ignore_broadcasts "1"; }
 
-# Imprime "proto dirección puerto" por cada socket en escucha.
-_net_listeners() {
-    audit_cmd_ss | awk '{
-        addr = $5; n = split(addr, a, ":"); port = a[n];
-        host = substr(addr, 1, length(addr) - length(port) - 1);
-        print $1, host, port
-    }'
-}
-
-_net_is_loopback() { [[ "$1" == 127.* || "$1" == "[::1]" || "$1" == "::1" ]]; }
-
 _chk_net_010() {
     audit_have ss || { audit_skip "No está disponible el comando ss (iproute2)"; return 0; }
     local proto host port bad=()
     while read -r proto host port; do
         [[ -z "$port" ]] && continue
-        _net_is_loopback "$host" && continue
+        audit_is_loopback "$host" && continue
         case "$port" in 21|23|512|513|514) bad+=("$proto/$port") ;; esac
-    done < <(_net_listeners)
+    done < <(audit_listeners)
     if (( ${#bad[@]} )); then
         audit_fail "Servicios inseguros en escucha: ${bad[*]}"
     else
@@ -110,7 +99,7 @@ _chk_net_011() {
     local proto host port list=()
     local -A seen=()
     while read -r proto host port; do
-        [[ -z "$port" ]] && continue
+        [[ -z "$port" || "$proto" != tcp ]] && continue
         case "$host" in
             0.0.0.0|"[::]"|"*"|"::") ;;
             *) continue ;;
@@ -118,7 +107,7 @@ _chk_net_011() {
         [[ -n "${seen[$proto/$port]:-}" ]] && continue
         seen[$proto/$port]=1
         list+=("$proto/$port")
-    done < <(_net_listeners)
+    done < <(audit_listeners)
     if (( ${#list[@]} )); then
         audit_warn "En escucha en todas las interfaces: ${list[*]}"
     else
@@ -138,4 +127,4 @@ audit_register NET-007 low network "Registra paquetes marcianos" _chk_net_007 "$
 audit_register NET-008 medium network "Rechaza source routing" _chk_net_008 "$(_fix_sysctl net.ipv4.conf.all.accept_source_route 0)"
 audit_register NET-009 low network "Ignora ping a broadcast" _chk_net_009 "$(_fix_sysctl net.ipv4.icmp_echo_ignore_broadcasts 1)"
 audit_register NET-010 high network "Sin servicios inseguros escuchando" _chk_net_010 "Desinstala o desactiva telnet, FTP y rsh/rlogin (systemctl disable --now <servicio>); usa SSH/SFTP"
-audit_register NET-011 info network "Servicios expuestos en todas las interfaces" _chk_net_011 "Revisa si cada servicio necesita escuchar en 0.0.0.0; si no, limítalo a 127.0.0.1 o filtra con el firewall"
+audit_register NET-011 info network "Servicios TCP expuestos en todas las interfaces" _chk_net_011 "Revisa si cada servicio necesita escuchar en 0.0.0.0; si no, limítalo a 127.0.0.1 o filtra con el firewall"

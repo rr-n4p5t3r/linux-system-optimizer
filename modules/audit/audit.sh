@@ -28,11 +28,12 @@ OPCIONES:
                           no aplica y exceptuadas
     --json                Informe en JSON (esquema v1)
     --output ARCHIVO      Guarda el informe en ARCHIVO (permisos 600)
-    --category CAT[,CAT]  Solo esas categorías (accounts, ssh, network)
+    --category CAT[,CAT]  Solo esas categorías: accounts, ssh, network, filesystem,
+                          hardening, persistence, patching, secrets, apps
     --profile PERFIL      Fuerza el perfil: server, database, docker, desktop,
                           laptop, gaming, dev, workstation
     --waivers ARCHIVO     Excepciones (por defecto /etc/lso/audit-waivers.conf)
-    --fast                Omite revisiones lentas
+    --fast                Omite las revisiones lentas (recorren el disco)
     --no-color            Sin colores
     -h, --help            Muestra esta ayuda
 

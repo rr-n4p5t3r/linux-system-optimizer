@@ -141,3 +141,10 @@ test_no_ss_is_skip() {
     assert_eq SKIP "${AUDIT_STATUS[NET-010]}"
     assert_eq SKIP "${AUDIT_STATUS[NET-011]}"
 }
+
+test_exposed_ignores_udp() {
+    audit_have() { [[ "$1" == ss ]]; }
+    audit_cmd_ss() { printf 'udp UNCONN 0 0 0.0.0.0:5353 0.0.0.0:*\nudp UNCONN 0 0 *:41609 *:*\n'; }
+    _run "$(mktemp -d)"
+    assert_eq PASS "${AUDIT_STATUS[NET-011]}"
+}

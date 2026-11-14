@@ -94,3 +94,27 @@ test_waivers_missing_file() {
     assert_status 0 audit_load_waivers /no/existe
     assert_eq "0" "${#AUDIT_WAIVED[@]}"
 }
+
+test_phase3_rules() {
+    audit_reset
+    local id
+    for id in HRD-011 HRD-012 APP-014 HRD-002 PAT-003 APP-002 FS-012 HRD-001 PAT-005; do
+        audit_register "$id" medium x "t" _noop "f"
+    done
+    AUDIT_PROFILE_CLASS="desktop"
+    audit_profile_apply
+    assert_eq "No aplica a equipos personales" "${AUDIT_FORCE_NA[HRD-011]}"
+    assert_eq "No aplica a equipos personales" "${AUDIT_FORCE_NA[APP-014]}"
+    assert_eq "low" "${AUDIT_SEV[HRD-002]}"
+    assert_eq "low" "${AUDIT_SEV[PAT-003]}"
+    assert_eq "low" "${AUDIT_SEV[APP-002]}"
+    audit_reset
+    for id in FS-012 HRD-001 PAT-005 HRD-011; do
+        audit_register "$id" medium x "t" _noop "f"
+    done
+    AUDIT_PROFILE_CLASS="container"
+    audit_profile_apply
+    assert_eq "Lo gestiona el host del contenedor" "${AUDIT_FORCE_NA[FS-012]}"
+    assert_eq "Lo gestiona el host del contenedor" "${AUDIT_FORCE_NA[HRD-001]}"
+    assert_eq "Lo gestiona el host del contenedor" "${AUDIT_FORCE_NA[PAT-005]}"
+}

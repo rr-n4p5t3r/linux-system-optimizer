@@ -19,8 +19,18 @@ AUDIT_PROFILE_RULES=(
     "desktop ACC-006 low"
     "desktop ACC-010 medium"
     "desktop NET-001 medium"
+    "desktop HRD-002 low"
+    "desktop PAT-003 low"
+    "desktop APP-002 low"
 )
-for _id in NET-001 NET-002 NET-003 NET-004 NET-005 NET-006 NET-007 NET-008 NET-009; do
+for _id in HRD-011 HRD-012 APP-014; do
+    AUDIT_PROFILE_RULES+=("desktop $_id na No aplica a equipos personales")
+done
+# En un contenedor, el kernel, el firewall, el reloj y los registros son del host.
+for _id in NET-001 NET-002 NET-003 NET-004 NET-005 NET-006 NET-007 NET-008 NET-009 \
+           FS-001 FS-002 FS-003 FS-012 FS-013 FS-014 FS-015 FS-016 \
+           HRD-001 HRD-002 HRD-003 HRD-004 HRD-005 HRD-006 HRD-007 HRD-008 HRD-009 \
+           HRD-010 HRD-011 HRD-012 HRD-013 PAT-005; do
     AUDIT_PROFILE_RULES+=("container $_id na Lo gestiona el host del contenedor")
 done
 unset _id

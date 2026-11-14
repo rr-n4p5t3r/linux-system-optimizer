@@ -248,3 +248,28 @@ audit_age_days() {
     m=$(stat -c %Y "$p" 2>/dev/null) || return 1
     echo $(( ($(date +%s) - m) / 86400 ))
 }
+
+# Imprime "proto dirección puerto" por cada socket en escucha.
+audit_listeners() {
+    audit_cmd_ss | awk '{
+        addr = $5; n = split(addr, a, ":"); port = a[n];
+        host = substr(addr, 1, length(addr) - length(port) - 1);
+        print $1, host, port
+    }'
+}
+
+audit_is_loopback() { [[ "$1" == 127.* || "$1" == "[::1]" || "$1" == "::1" ]]; }
+
+# audit_port_state PUERTO → none | loopback | exposed (según ss)
+audit_port_state() {
+    local proto host port state=none
+    while read -r proto host port; do
+        [[ "$port" == "$1" ]] || continue
+        if audit_is_loopback "$host"; then
+            [[ "$state" == none ]] && state=loopback
+        else
+            state=exposed
+        fi
+    done < <(audit_listeners)
+    echo "$state"
+}
