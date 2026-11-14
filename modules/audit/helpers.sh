@@ -219,3 +219,32 @@ audit_first_file() {
     done
     return 1
 }
+
+audit_cmd_apt_upgrade_sim()  { LC_ALL=C apt-get -s -o Debug::NoLocking=1 upgrade 2>/dev/null; }
+audit_cmd_dnf_security()     { dnf -q updateinfo list --security 2>/dev/null; }
+audit_cmd_zypper_security()  { zypper -q list-patches --category security 2>/dev/null; }
+audit_cmd_needs_restarting() { needs-restarting -r >/dev/null 2>&1; }
+audit_cmd_uname_r()          { uname -r; }
+
+# Gestor de paquetes: apt, dnf, zypper, pacman o vacío.
+audit_pkg_manager() {
+    case "${LSO_PACKAGE_MANAGER:-}" in
+        apt|apt-get) echo apt; return 0 ;;
+        dnf|yum) echo dnf; return 0 ;;
+        zypper|pacman) echo "$LSO_PACKAGE_MANAGER"; return 0 ;;
+    esac
+    if audit_have apt-get; then echo apt
+    elif audit_have dnf || audit_have yum; then echo dnf
+    elif audit_have zypper; then echo zypper
+    elif audit_have pacman; then echo pacman
+    fi
+}
+
+# Días desde la última modificación de RUTA (return 1 si no existe).
+audit_age_days() {
+    local p m
+    p=$(audit_path "$1")
+    [[ -e "$p" ]] || return 1
+    m=$(stat -c %Y "$p" 2>/dev/null) || return 1
+    echo $(( ($(date +%s) - m) / 86400 ))
+}
