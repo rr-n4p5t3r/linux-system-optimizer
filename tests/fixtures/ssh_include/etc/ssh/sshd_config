@@ -1,0 +1,8 @@
+# Configuración de prueba
+Include /etc/ssh/sshd_config.d/*.conf
+
+PermitRootLogin yes
+  MaxAuthTries   3
+
+Match User x
+    PasswordAuthentication yes
