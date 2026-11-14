@@ -2,18 +2,14 @@
 
 ## Versiones soportadas
 
-LSO está en fase **alpha** (versión actual: `0.2.0-alpha`) y todavía no ha
-alcanzado una versión `1.0` estable. Mientras tanto solo hay una línea de
-desarrollo activa: la rama `main`. No se mantienen versiones alpha
-anteriores ni ramas paralelas.
+La versión estable actual es `1.0.0`. Solo hay una línea de desarrollo
+activa: la rama `main`. Los arreglos de seguridad se publican sobre la última
+versión `1.x`; no se mantienen versiones anteriores ni ramas paralelas.
 
-| Versión              | Soportada           |
-| --------------------- | -------------------- |
-| `0.2.x-alpha` (`main`) | :white_check_mark: |
-| `< 0.2.0-alpha`        | :x:                 |
-
-Cuando el proyecto alcance `1.0`, esta tabla se actualizará para reflejar
-las versiones con mantenimiento a largo plazo.
+| Versión                | Soportada           |
+| ---------------------- | ------------------- |
+| `1.0.x` (`main`)       | :white_check_mark:  |
+| `< 1.0.0` (alpha)      | :x:                 |
 
 ## Alcance
 
@@ -48,7 +44,7 @@ reprodujiste, pasos para reproducir, e impacto esperado.
 ### Qué esperar
 
 - Confirmación de recepción en un plazo de **5 días**.
-- Proyecto de un solo mantenedor en fase alpha: no hay una SLA formal, pero
+- Proyecto de un solo mantenedor: no hay una SLA formal, pero
   los reportes válidos con impacto de privilegios/root se priorizan sobre
   cualquier otro trabajo en curso.
 - Si se acepta, se coordina contigo una fecha de divulgación una vez

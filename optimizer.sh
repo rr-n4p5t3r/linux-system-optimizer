@@ -3,7 +3,7 @@
 # Linux System Optimizer (LSO)
 # Framework modular y extensible para optimizar distribuciones GNU/Linux
 # =============================================================================
-# Versión: 0.1.0-alpha
+# Versión: 1.0.0
 # Autor: Ricardo Rosero <rrosero2000@gmail.com>
 # GitHub: https://github.com/rr-n4p5t3r
 # Licencia: GPLv3

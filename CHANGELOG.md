@@ -2,7 +2,10 @@
 
 Todos los cambios notables de este proyecto serán documentados aquí.
 
-## [Sin publicar]
+## [1.0.0] - 2026-11-14
+
+Primera versión estable.
+
 
 Agrega `lso audit`, un módulo de auditoría de seguridad de solo lectura con
 tablero interactivo en la terminal, inspirado en linaudit pero escrito desde
@@ -25,6 +28,30 @@ cero en Bash, sin dependencias.
   `/etc/lso/audit-waivers.conf` (el instalador crea un ejemplo).
 - `--fast` omite las revisiones que recorren el disco.
 - **Pruebas automáticas** sin dependencias: `bash tests/run.sh`.
+
+### Seguridad
+- Logs y backups solo se escriben en directorios seguros (de root o del
+  usuario, sin escritura para otros). Antes se usaban directorios 777 y rutas
+  fijas en `/tmp`, lo que permitía ataques con enlaces simbólicos como root.
+- El instalador deja `logs/`, `backups/` y `reports/` como `root:root 755` y
+  ya no copia `.git`, pruebas ni documentos internos a `/opt`.
+- El motor de reglas rechaza acciones `optimize_*` con nombres fuera de
+  `[a-z0-9_]`, que permitían cargar archivos fuera del proyecto.
+
+### Corregido
+- Fedora, RHEL, Rocky, AlmaLinux y Amazon Linux ya no sobrescriben
+  `/etc/dnf/dnf.conf`: hacen backup y cambian solo sus claves.
+- El optimizador de navegadores no daña el `Exec=` del acceso directo, no
+  repite los ajustes de Firefox y, con `sudo`, trabaja sobre el home del
+  usuario real. Lo mismo para la limpieza de caché, el autoarranque, el
+  escritorio y el entorno de desarrollo.
+- Los backups guardan su ruta original (`archivo.bak.path`) y `lso restore`
+  los devuelve al sitio exacto; el menú muestra la fecha y el destino.
+- `process_manager` ya no dice "zombies limpiados" tras un `kill -9` sin
+  efecto: muestra el proceso padre y le envía `SIGCHLD`, e informa cuántos
+  quedan.
+- Cálculo de uso de CPU sin división por cero y lectura de memoria
+  independiente del idioma.
 
 ## [0.3.2-alpha] - 2026-07-30
 

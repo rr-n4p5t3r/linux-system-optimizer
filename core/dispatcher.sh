@@ -64,7 +64,7 @@ show_version() {
     if [[ -f "$version_file" ]]; then
         cat "$version_file"
     else
-        echo "LSO v0.1.0-alpha"
+        echo "LSO v1.0.0"
         echo "Autor: Ricardo Rosero <rrosero2000@gmail.com>"
         echo "GitHub: https://github.com/rr-n4p5t3r"
     fi
